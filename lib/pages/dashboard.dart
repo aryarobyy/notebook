@@ -1,0 +1,69 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:to_do_list/pages/calendar.dart';
+import 'package:to_do_list/pages/focus.dart';
+import 'package:to_do_list/pages/home.dart';
+import 'package:to_do_list/pages/setting.dart';
+import 'package:animated_bottom_navigation_bar/animated_bottom_navigation_bar.dart';
+
+class Dashboard extends ConsumerStatefulWidget {
+  Dashboard({super.key});
+
+  @override
+  ConsumerState<Dashboard> createState() => _DashboardState();
+}
+
+class _DashboardState extends ConsumerState<Dashboard> {
+  int _currIndex = 0;
+
+  final List<IconData> _iconList = [
+    Icons.home,
+    Icons.calendar_month,
+    Icons.access_time_outlined,
+    Icons.settings,
+  ];
+
+  void _onTapped(int index) {
+    setState(() {
+      _currIndex = index;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final widgetOption = [
+      Home(),
+      Calendar(),
+      FocusPage(),
+      Setting()
+    ];
+
+    return Scaffold(
+      body: widgetOption[_currIndex],
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+        },
+        backgroundColor: Theme.of(context).colorScheme.primary,
+        shape: CircleBorder(),
+        child: Icon(Icons.add),
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+      bottomNavigationBar: AnimatedBottomNavigationBar(
+        icons: _iconList,
+        activeIndex: _currIndex,
+        gapLocation: GapLocation.center,
+        notchSmoothness: NotchSmoothness.smoothEdge,
+        onTap: _onTapped,
+        backgroundColor: Theme.of(context).colorScheme.surface,
+        activeColor: Theme.of(context).colorScheme.primary,
+        inactiveColor: Theme.of(context).brightness == Brightness.dark
+            ? Colors.white
+            : Colors.black54,
+        height: 60,
+        elevation: 8,
+        splashColor: Theme.of(context).colorScheme.secondary.withOpacity(0.3),
+        splashRadius: 20,
+      ),
+    );
+  }
+}
