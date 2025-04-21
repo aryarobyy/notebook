@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:to_do_list/pages/calendar.dart';
-import 'package:to_do_list/pages/focus.dart';
+import 'package:to_do_list/pages/focus/focus.dart';
 import 'package:to_do_list/pages/home.dart';
 import 'package:to_do_list/pages/setting.dart';
 import 'package:animated_bottom_navigation_bar/animated_bottom_navigation_bar.dart';

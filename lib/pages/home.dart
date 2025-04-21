@@ -7,7 +7,7 @@ class Home extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context);
+    final cs = Theme.of(context).colorScheme;
 
     return Scaffold(
       appBar: AppBar(
@@ -27,6 +27,7 @@ class Home extends StatelessWidget {
       ),
       body: Column(
         children: [
+          SizedBox(height: 15,),
           Row(
             children: [
               Column(
@@ -48,7 +49,7 @@ class Home extends StatelessWidget {
               Spacer(),
               CircleAvatar(
                 radius: 40,
-                backgroundColor: cs.primaryColor.withOpacity(0.4),
+                backgroundColor: cs.primary.withOpacity(0.4),
                 backgroundImage: AssetImage("assets/bayu.jpg"),
               )
             ],
@@ -63,11 +64,92 @@ class Home extends StatelessWidget {
                 fontSize: 14,
               ),
               const SizedBox(height: 8),
-              MyCard(
-                title: "Bayu Nikah",
-                subtitle: "Besok",
+              Padding(
+                padding: const EdgeInsets.all(12.0),
+                child: MyCard(
+                  title: "Bayu Nikah",
+                  subtitle: "Besok",
+                ),
               )
             ],
+          ),
+          Padding(
+            padding: const EdgeInsets.all(12.0),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(50),
+                    color: cs.primary,
+                  ),
+                  child: MyText(
+                    "All",
+                    fontWeight: FontWeight.w300,
+                    fontSize: 18,
+                    color: cs.onSurface,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(50),
+                    color: cs.surface,
+                  ),
+                  child: MyText(
+                    "Tomorrow",
+                    fontWeight: FontWeight.w300,
+                    fontSize: 18,
+                    color: cs.onSurface,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(50),
+                    color: cs.surface,
+                  ),
+                  child: Center(
+                    child: MyText(
+                      "Favourite",
+                      fontWeight: FontWeight.w300,
+                      fontSize: 18,
+                      color: cs.onSurface,
+                    )
+                  ),
+                ),
+                SizedBox(width: 8,),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(50),
+                    color: cs.surface,
+                  ),
+                  child: Center(
+                    child: Icon(
+                      Icons.add,
+                      color: cs.onSurface,
+                    )
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Expanded(
+            child: ListView.builder(
+              itemCount: 4,
+              itemBuilder: (BuildContext context, int index) {
+                return Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: MyCard(
+                    title: "Pergi ke pasar",
+                    subtitle: "Hari ini",
+                  ),
+                );
+              },
+            ),
           )
         ],
       ),
