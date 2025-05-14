@@ -3,13 +3,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:to_do_list/component/theme/dark_theme.dart';
 import 'package:to_do_list/component/theme/light_theme.dart';
 import 'package:to_do_list/component/theme/theme_provider.dart';
-import 'package:to_do_list/pages/dashboard.dart';
+import 'package:to_do_list/pages/auth/auth.dart';
 
-void main() {
+void main() async {
   runApp(const ProviderScope(child: MyApp()));
 }
 
 class MyApp extends ConsumerWidget {
+
   const MyApp({super.key});
 
   @override
@@ -19,7 +20,7 @@ class MyApp extends ConsumerWidget {
       theme: lightTheme,
       darkTheme: darkTheme,
       themeMode: themeMode,
-      home: Dashboard(),
+      home: Auth(),
     );
   }
 }
