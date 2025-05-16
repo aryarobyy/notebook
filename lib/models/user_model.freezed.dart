@@ -17,11 +17,15 @@ T _$identity<T>(T value) => value;
 mixin _$UserModel {
   String get id;
   String get username;
-  String get name;
+  String? get name;
+  String? get image;
   @JsonKey(unknownEnumValue: Role.USER)
   Role get role;
   String get email;
+  @JsonKey(fromJson: _dateTimeFromJson)
   DateTime get createdAt;
+  @JsonKey(fromJson: _dateTimeFromJsonNullable)
+  DateTime? get lastActive;
 
   /// Create a copy of UserModel
   /// with the given fields replaced by the non-null parameter values.
@@ -42,20 +46,23 @@ mixin _$UserModel {
             (identical(other.username, username) ||
                 other.username == username) &&
             (identical(other.name, name) || other.name == name) &&
+            (identical(other.image, image) || other.image == image) &&
             (identical(other.role, role) || other.role == role) &&
             (identical(other.email, email) || other.email == email) &&
             (identical(other.createdAt, createdAt) ||
-                other.createdAt == createdAt));
+                other.createdAt == createdAt) &&
+            (identical(other.lastActive, lastActive) ||
+                other.lastActive == lastActive));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode =>
-      Object.hash(runtimeType, id, username, name, role, email, createdAt);
+  int get hashCode => Object.hash(runtimeType, id, username, name, image, role,
+      email, createdAt, lastActive);
 
   @override
   String toString() {
-    return 'UserModel(id: $id, username: $username, name: $name, role: $role, email: $email, createdAt: $createdAt)';
+    return 'UserModel(id: $id, username: $username, name: $name, image: $image, role: $role, email: $email, createdAt: $createdAt, lastActive: $lastActive)';
   }
 }
 
@@ -67,10 +74,12 @@ abstract mixin class $UserModelCopyWith<$Res> {
   $Res call(
       {String id,
       String username,
-      String name,
+      String? name,
+      String? image,
       @JsonKey(unknownEnumValue: Role.USER) Role role,
       String email,
-      DateTime createdAt});
+      @JsonKey(fromJson: _dateTimeFromJson) DateTime createdAt,
+      @JsonKey(fromJson: _dateTimeFromJsonNullable) DateTime? lastActive});
 }
 
 /// @nodoc
@@ -87,10 +96,12 @@ class _$UserModelCopyWithImpl<$Res> implements $UserModelCopyWith<$Res> {
   $Res call({
     Object? id = null,
     Object? username = null,
-    Object? name = null,
+    Object? name = freezed,
+    Object? image = freezed,
     Object? role = null,
     Object? email = null,
     Object? createdAt = null,
+    Object? lastActive = freezed,
   }) {
     return _then(_self.copyWith(
       id: null == id
@@ -101,10 +112,14 @@ class _$UserModelCopyWithImpl<$Res> implements $UserModelCopyWith<$Res> {
           ? _self.username
           : username // ignore: cast_nullable_to_non_nullable
               as String,
-      name: null == name
+      name: freezed == name
           ? _self.name
           : name // ignore: cast_nullable_to_non_nullable
-              as String,
+              as String?,
+      image: freezed == image
+          ? _self.image
+          : image // ignore: cast_nullable_to_non_nullable
+              as String?,
       role: null == role
           ? _self.role
           : role // ignore: cast_nullable_to_non_nullable
@@ -117,6 +132,10 @@ class _$UserModelCopyWithImpl<$Res> implements $UserModelCopyWith<$Res> {
           ? _self.createdAt
           : createdAt // ignore: cast_nullable_to_non_nullable
               as DateTime,
+      lastActive: freezed == lastActive
+          ? _self.lastActive
+          : lastActive // ignore: cast_nullable_to_non_nullable
+              as DateTime?,
     ));
   }
 }
@@ -127,10 +146,12 @@ class _UserModel implements UserModel {
   _UserModel(
       {required this.id,
       required this.username,
-      required this.name,
+      this.name,
+      this.image,
       @JsonKey(unknownEnumValue: Role.USER) required this.role,
       required this.email,
-      required this.createdAt});
+      @JsonKey(fromJson: _dateTimeFromJson) required this.createdAt,
+      @JsonKey(fromJson: _dateTimeFromJsonNullable) this.lastActive});
   factory _UserModel.fromJson(Map<String, dynamic> json) =>
       _$UserModelFromJson(json);
 
@@ -139,14 +160,20 @@ class _UserModel implements UserModel {
   @override
   final String username;
   @override
-  final String name;
+  final String? name;
+  @override
+  final String? image;
   @override
   @JsonKey(unknownEnumValue: Role.USER)
   final Role role;
   @override
   final String email;
   @override
+  @JsonKey(fromJson: _dateTimeFromJson)
   final DateTime createdAt;
+  @override
+  @JsonKey(fromJson: _dateTimeFromJsonNullable)
+  final DateTime? lastActive;
 
   /// Create a copy of UserModel
   /// with the given fields replaced by the non-null parameter values.
@@ -172,20 +199,23 @@ class _UserModel implements UserModel {
             (identical(other.username, username) ||
                 other.username == username) &&
             (identical(other.name, name) || other.name == name) &&
+            (identical(other.image, image) || other.image == image) &&
             (identical(other.role, role) || other.role == role) &&
             (identical(other.email, email) || other.email == email) &&
             (identical(other.createdAt, createdAt) ||
-                other.createdAt == createdAt));
+                other.createdAt == createdAt) &&
+            (identical(other.lastActive, lastActive) ||
+                other.lastActive == lastActive));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode =>
-      Object.hash(runtimeType, id, username, name, role, email, createdAt);
+  int get hashCode => Object.hash(runtimeType, id, username, name, image, role,
+      email, createdAt, lastActive);
 
   @override
   String toString() {
-    return 'UserModel(id: $id, username: $username, name: $name, role: $role, email: $email, createdAt: $createdAt)';
+    return 'UserModel(id: $id, username: $username, name: $name, image: $image, role: $role, email: $email, createdAt: $createdAt, lastActive: $lastActive)';
   }
 }
 
@@ -200,10 +230,12 @@ abstract mixin class _$UserModelCopyWith<$Res>
   $Res call(
       {String id,
       String username,
-      String name,
+      String? name,
+      String? image,
       @JsonKey(unknownEnumValue: Role.USER) Role role,
       String email,
-      DateTime createdAt});
+      @JsonKey(fromJson: _dateTimeFromJson) DateTime createdAt,
+      @JsonKey(fromJson: _dateTimeFromJsonNullable) DateTime? lastActive});
 }
 
 /// @nodoc
@@ -220,10 +252,12 @@ class __$UserModelCopyWithImpl<$Res> implements _$UserModelCopyWith<$Res> {
   $Res call({
     Object? id = null,
     Object? username = null,
-    Object? name = null,
+    Object? name = freezed,
+    Object? image = freezed,
     Object? role = null,
     Object? email = null,
     Object? createdAt = null,
+    Object? lastActive = freezed,
   }) {
     return _then(_UserModel(
       id: null == id
@@ -234,10 +268,14 @@ class __$UserModelCopyWithImpl<$Res> implements _$UserModelCopyWith<$Res> {
           ? _self.username
           : username // ignore: cast_nullable_to_non_nullable
               as String,
-      name: null == name
+      name: freezed == name
           ? _self.name
           : name // ignore: cast_nullable_to_non_nullable
-              as String,
+              as String?,
+      image: freezed == image
+          ? _self.image
+          : image // ignore: cast_nullable_to_non_nullable
+              as String?,
       role: null == role
           ? _self.role
           : role // ignore: cast_nullable_to_non_nullable
@@ -250,6 +288,10 @@ class __$UserModelCopyWithImpl<$Res> implements _$UserModelCopyWith<$Res> {
           ? _self.createdAt
           : createdAt // ignore: cast_nullable_to_non_nullable
               as DateTime,
+      lastActive: freezed == lastActive
+          ? _self.lastActive
+          : lastActive // ignore: cast_nullable_to_non_nullable
+              as DateTime?,
     ));
   }
 }

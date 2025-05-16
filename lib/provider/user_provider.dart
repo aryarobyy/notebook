@@ -106,7 +106,7 @@ class UserProvider {
     required String password,
   }) async {
     final response = await http.post(
-      Uri.parse('$url/register'),
+      Uri.parse('$url/'),
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode({
         'username': username,
@@ -127,45 +127,64 @@ class UserProvider {
     required String email,
     required String password,
   }) async {
-    final response = await http.post(
-      Uri.parse('$url/login'),
-      headers: {'Content-Type': 'application/json'},
-      body: jsonEncode({
-        'email': email,
-        'password': password,
-      }),
-    );
+    try{
+      final response = await http.post(
+        Uri.parse('$url/login'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'email': email,
+          'password': password,
+        }),
+      );
 
-    if (response.statusCode == 200) {
-      final Map<String, dynamic> data = jsonDecode(response.body);
-      await _storage.write(key: 'token', value: data['token']);
-      final Map<String, dynamic> userMap = data['user'];
-      await _storage.write(key: 'userData', value: jsonEncode(userMap));
-
-    } else {
-      throw Exception('Failed to login: ${response.body}');
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> data = jsonDecode(response.body);
+        await _storage.write(key: 'token', value: data['token']);
+        final userData = data['data'];
+        final Map<String, dynamic> userMap = userData['data'];
+        await _storage.write(key: 'userData', value: jsonEncode(userMap));
+        await savingUser();
+      } else {
+        throw Exception('Failed to login: ${response.body}');
+      }
+    } catch(e, stackTrace){
+      print("Error: $e");
+      print("Baris ke: $stackTrace");
     }
   }
 
   Future<UserModel> getUserById(String userId) async {
     final token = await _storage.read(key: 'token');
+    print("TOken $token");
+    print("UserId: $userId");
 
-    if (token == null) {
-      throw Exception('No token found. User might not be logged in.');
-    }
+    try{
+      if (token == null) {
+        throw Exception('No token found. User might not be logged in.');
+      }
 
-    final response = await http.get(
-      Uri.parse('$url/$userId'),
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer $token',
-      },
-    );
+      final response = await http.get(
+        Uri.parse('$url/$userId'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
 
-    if (response.statusCode == 200) {
-      return jsonDecode(response.body);
-    } else {
-      throw Exception('Failed to get user: ${response.body}');
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> responseData = jsonDecode(response.body);
+        final userData = responseData['data'];
+        return UserModel.fromJson(userData['data']);
+      } else {
+        throw Exception('Failed to get user: ${response.body}');
+      }
+    } catch(e, stackTrace){
+      final traceLines = stackTrace.toString().split('\n');
+      final firstLine = traceLines.isNotEmpty ? traceLines[0] : 'unknown location';
+
+      print('❌ Error: $e');
+      print('📍 Terjadi di: $firstLine');
+      rethrow;
     }
   }
 
