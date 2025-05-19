@@ -13,6 +13,7 @@ sealed class NoteModel with _$NoteModel {
     required String content,
     required DateTime createdAt,
     required DateTime updateAt,
+    required List<String> tags,
   }) = _NoteModel;
 
   factory NoteModel.fromJson(Map<String, dynamic> json) => _$NoteModelFromJson(json);

@@ -21,6 +21,7 @@ mixin _$NoteModel {
   String get content;
   DateTime get createdAt;
   DateTime get updateAt;
+  List<String> get tags;
 
   /// Create a copy of NoteModel
   /// with the given fields replaced by the non-null parameter values.
@@ -45,17 +46,18 @@ mixin _$NoteModel {
             (identical(other.createdAt, createdAt) ||
                 other.createdAt == createdAt) &&
             (identical(other.updateAt, updateAt) ||
-                other.updateAt == updateAt));
+                other.updateAt == updateAt) &&
+            const DeepCollectionEquality().equals(other.tags, tags));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(
-      runtimeType, id, createdBy, title, content, createdAt, updateAt);
+  int get hashCode => Object.hash(runtimeType, id, createdBy, title, content,
+      createdAt, updateAt, const DeepCollectionEquality().hash(tags));
 
   @override
   String toString() {
-    return 'NoteModel(id: $id, createdBy: $createdBy, title: $title, content: $content, createdAt: $createdAt, updateAt: $updateAt)';
+    return 'NoteModel(id: $id, createdBy: $createdBy, title: $title, content: $content, createdAt: $createdAt, updateAt: $updateAt, tags: $tags)';
   }
 }
 
@@ -70,7 +72,8 @@ abstract mixin class $NoteModelCopyWith<$Res> {
       String title,
       String content,
       DateTime createdAt,
-      DateTime updateAt});
+      DateTime updateAt,
+      List<String> tags});
 }
 
 /// @nodoc
@@ -91,6 +94,7 @@ class _$NoteModelCopyWithImpl<$Res> implements $NoteModelCopyWith<$Res> {
     Object? content = null,
     Object? createdAt = null,
     Object? updateAt = null,
+    Object? tags = null,
   }) {
     return _then(_self.copyWith(
       id: null == id
@@ -117,6 +121,10 @@ class _$NoteModelCopyWithImpl<$Res> implements $NoteModelCopyWith<$Res> {
           ? _self.updateAt
           : updateAt // ignore: cast_nullable_to_non_nullable
               as DateTime,
+      tags: null == tags
+          ? _self.tags
+          : tags // ignore: cast_nullable_to_non_nullable
+              as List<String>,
     ));
   }
 }
@@ -130,7 +138,9 @@ class _NoteModel implements NoteModel {
       required this.title,
       required this.content,
       required this.createdAt,
-      required this.updateAt});
+      required this.updateAt,
+      required final List<String> tags})
+      : _tags = tags;
   factory _NoteModel.fromJson(Map<String, dynamic> json) =>
       _$NoteModelFromJson(json);
 
@@ -146,6 +156,13 @@ class _NoteModel implements NoteModel {
   final DateTime createdAt;
   @override
   final DateTime updateAt;
+  final List<String> _tags;
+  @override
+  List<String> get tags {
+    if (_tags is EqualUnmodifiableListView) return _tags;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(_tags);
+  }
 
   /// Create a copy of NoteModel
   /// with the given fields replaced by the non-null parameter values.
@@ -175,17 +192,18 @@ class _NoteModel implements NoteModel {
             (identical(other.createdAt, createdAt) ||
                 other.createdAt == createdAt) &&
             (identical(other.updateAt, updateAt) ||
-                other.updateAt == updateAt));
+                other.updateAt == updateAt) &&
+            const DeepCollectionEquality().equals(other._tags, _tags));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(
-      runtimeType, id, createdBy, title, content, createdAt, updateAt);
+  int get hashCode => Object.hash(runtimeType, id, createdBy, title, content,
+      createdAt, updateAt, const DeepCollectionEquality().hash(_tags));
 
   @override
   String toString() {
-    return 'NoteModel(id: $id, createdBy: $createdBy, title: $title, content: $content, createdAt: $createdAt, updateAt: $updateAt)';
+    return 'NoteModel(id: $id, createdBy: $createdBy, title: $title, content: $content, createdAt: $createdAt, updateAt: $updateAt, tags: $tags)';
   }
 }
 
@@ -203,7 +221,8 @@ abstract mixin class _$NoteModelCopyWith<$Res>
       String title,
       String content,
       DateTime createdAt,
-      DateTime updateAt});
+      DateTime updateAt,
+      List<String> tags});
 }
 
 /// @nodoc
@@ -224,6 +243,7 @@ class __$NoteModelCopyWithImpl<$Res> implements _$NoteModelCopyWith<$Res> {
     Object? content = null,
     Object? createdAt = null,
     Object? updateAt = null,
+    Object? tags = null,
   }) {
     return _then(_NoteModel(
       id: null == id
@@ -250,6 +270,10 @@ class __$NoteModelCopyWithImpl<$Res> implements _$NoteModelCopyWith<$Res> {
           ? _self.updateAt
           : updateAt // ignore: cast_nullable_to_non_nullable
               as DateTime,
+      tags: null == tags
+          ? _self._tags
+          : tags // ignore: cast_nullable_to_non_nullable
+              as List<String>,
     ));
   }
 }
