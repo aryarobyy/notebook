@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:to_do_list/models/index.dart';
+import 'package:to_do_list/models/user_model.dart';
 import 'package:to_do_list/provider/user_provider.dart';
 
 final userServiceProvider = Provider((ref) => UserProvider());
@@ -68,23 +68,38 @@ class UserNotifier extends StateNotifier<State> {
       final userDataString = await _storage.read(key: 'userData');
 
       if (userDataString == null || userDataString.isEmpty) {
-        state = state.copyWith(user: null, isLoading: false);
+        state = state.copyWith(isLoading: false, user: null);
         return;
       }
 
       final Map<String, dynamic> userMap = jsonDecode(userDataString);
       final String id = userMap['id'] as String;
-
-      try {
-        final user = await _provider.getUserById(id);
-        state = state.copyWith(user: user, isLoading: false);
-      } catch (e) {
-        await _storage.delete(key: 'userData');
-        state = state.copyWith(user: null, isLoading: false);
-      }
+      final user = await _provider.getUserById(id);
+      state = state.copyWith(user: user, isLoading: false);
+      return;
     } catch (e) {
       await _storage.delete(key: 'userData');
       state = state.copyWith(user: null, error: e.toString(), isLoading: false);
+      rethrow;
+    }
+  }
+
+  Future<UserModel> update ({
+    required String userId,
+    required Map<String, dynamic> updatedData,
+  }) async {
+    state = state.copyWith(isLoading: true, error: null);
+    try{
+      final data = await _provider.updateUser(
+        userId: userId,
+        updatedData: updatedData
+      );
+
+      state = state.copyWith(isLoading: false, user: data);
+      return data;
+    } catch (e) {
+      state = state.copyWith(user: null, error: e.toString(), isLoading: false);
+      rethrow;
     }
   }
 

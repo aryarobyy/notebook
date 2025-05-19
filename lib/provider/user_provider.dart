@@ -7,6 +7,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:image/image.dart' as img;
 import 'package:http/http.dart' as http;
+import 'package:to_do_list/component/handler/error_handler.dart';
 import 'package:to_do_list/models/index.dart';
 
 
@@ -59,9 +60,9 @@ class UserProvider {
 
       await _storage.write(key: 'userData', value: jsonEncode(updatedUserData));
       print("Updated user data with local image paths: ${jsonEncode(updatedUserData)}");
-    } catch (e) {
-      print("Error in savingUser: $e");
-      print("Stack trace: ${StackTrace.current}");
+    } catch (e, stackTrace) {
+      handleError(e, stackTrace);
+      rethrow;
     }
   }
 
@@ -94,8 +95,9 @@ class UserProvider {
       } else {
         print("Failed to download image. Status code: ${response.statusCode}");
       }
-    } catch (e) {
-      print("Error downloading and saving image: $e");
+    } catch (e, stackTrace) {
+      handleError(e, stackTrace);
+      rethrow;
     }
     return null;
   }
@@ -105,21 +107,26 @@ class UserProvider {
     required String email,
     required String password,
   }) async {
-    final response = await http.post(
-      Uri.parse('$url/'),
-      headers: {'Content-Type': 'application/json'},
-      body: jsonEncode({
-        'username': username,
-        'email': email,
-        'password': password,
-      }),
-    );
+    try{
+      final response = await http.post(
+        Uri.parse('$url/'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'username': username,
+          'email': email,
+          'password': password,
+        }),
+      );
 
-    if (response.statusCode == 200 || response.statusCode == 201) {
-      final data = jsonDecode(response.body);
-      await _storage.write(key: 'token', value: data['token']);
-    } else {
-      throw Exception('Failed to register: ${response.body}');
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        final data = jsonDecode(response.body);
+        await _storage.write(key: 'token', value: data['token']);
+      } else {
+        throw Exception('Failed to register: ${response.body}');
+      }
+    } catch (e, stackTrace){
+      handleError(e, stackTrace);
+      rethrow;
     }
   }
 
@@ -148,15 +155,13 @@ class UserProvider {
         throw Exception('Failed to login: ${response.body}');
       }
     } catch(e, stackTrace){
-      print("Error: $e");
-      print("Baris ke: $stackTrace");
+      handleError(e, stackTrace);
+      rethrow;
     }
   }
 
   Future<UserModel> getUserById(String userId) async {
     final token = await _storage.read(key: 'token');
-    print("TOken $token");
-    print("UserId: $userId");
 
     try{
       if (token == null) {
@@ -179,15 +184,34 @@ class UserProvider {
         throw Exception('Failed to get user: ${response.body}');
       }
     } catch(e, stackTrace){
-      final traceLines = stackTrace.toString().split('\n');
-      final firstLine = traceLines.isNotEmpty ? traceLines[0] : 'unknown location';
-
-      print('❌ Error: $e');
-      print('📍 Terjadi di: $firstLine');
+      handleError(e, stackTrace);
       rethrow;
     }
   }
 
+  Future<UserModel> updateUser({
+    required String userId,
+    required Map<String, dynamic> updatedData
+  }) async {
+    try{
+      final response = await http.put(
+        Uri.parse('$url/$userId'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode(updatedData),
+      );
+
+      if (response.statusCode != 200) {
+        throw Exception('Failed to update user: ${response.body}');
+      }
+
+      final userUpdated = await getUserById(userId);
+
+      return userUpdated;
+    } catch (e, stackTrace) {
+      handleError(e, stackTrace);
+      rethrow;
+    }
+  }
 
   Future<void> logout() async {
     await _storage.delete(key: 'token');

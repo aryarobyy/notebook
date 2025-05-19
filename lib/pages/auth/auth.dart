@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:to_do_list/component/text_field.dart';
 import 'package:to_do_list/notifiers/user_notifier.dart';
+import 'package:to_do_list/pages/dashboard.dart';
 import 'package:to_do_list/pages/home.dart';
 
 part 'login.dart';
@@ -15,35 +16,27 @@ class Auth extends ConsumerStatefulWidget {
 }
 
 class _AuthState extends ConsumerState<Auth> {
-  bool _isInitialized = false;
 
   @override
   void initState() {
     super.initState();
-    // Use Future.microtask to avoid calling setState during build
-    Future.microtask(() => _initializeAuth());
+    Future.microtask(() {
+      ref.read(userNotifierProvider.notifier).currentUser();
+    });
   }
 
-  Future<void> _initializeAuth() async {
-    await ref.read(userNotifierProvider.notifier).currentUser();
-    if (mounted) {
-      setState(() {
-        _isInitialized = true;
-      });
-    }
+  @override
+  void reassemble() { //buat hot reload aja, hapus pas release
+    super.reassemble();
+    ref.read(userNotifierProvider.notifier).currentUser();
   }
 
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(userNotifierProvider);
 
-    if (!_isInitialized) {
-      return const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
-      );
-    }
-
     if (state.isLoading) {
+      print("Helooo: ${state.isLoading}");
       return const Scaffold(
         body: Center(child: CircularProgressIndicator()),
       );
@@ -57,8 +50,9 @@ class _AuthState extends ConsumerState<Auth> {
             children: [
               Text('Error: ${state.error}', style: TextStyle(color: Colors.red)),
               ElevatedButton(
-                onPressed: () => _initializeAuth(),
-                child: Text('Retry'),
+                onPressed: () =>
+                    ref.read(userNotifierProvider.notifier).currentUser(),
+                child: const Text('Retry'),
               ),
             ],
           ),
@@ -69,7 +63,7 @@ class _AuthState extends ConsumerState<Auth> {
     final user = state.user;
     return Scaffold(
       resizeToAvoidBottomInset: false,
-      body: user == null ? Register() : Home(),
+      body: user == null ? Login() : Dashboard(),
     );
   }
 }

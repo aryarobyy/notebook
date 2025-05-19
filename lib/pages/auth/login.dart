@@ -32,7 +32,7 @@ class _LoginState extends ConsumerState<Login> {
         return;
       } else {
         print("Login successful! Navigating to Home");
-        Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => Home()));
+        // Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => Dashboard()));
       }
     }
 
