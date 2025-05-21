@@ -10,7 +10,6 @@ import 'package:http/http.dart' as http;
 import 'package:to_do_list/component/handler/error_handler.dart';
 import 'package:to_do_list/models/index.dart';
 
-
 final api = dotenv.env['SERVER_URI'];
 final url = '$api/user';
 FlutterSecureStorage _storage = FlutterSecureStorage();
@@ -59,7 +58,6 @@ class UserProvider {
       }
 
       await _storage.write(key: 'userData', value: jsonEncode(updatedUserData));
-      print("Updated user data with local image paths: ${jsonEncode(updatedUserData)}");
     } catch (e, stackTrace) {
       handleError(e, stackTrace);
       rethrow;
@@ -68,7 +66,6 @@ class UserProvider {
 
   Future<String?> _downloadAndSaveImage(String url, String userId, String dirName) async {
     try {
-      print("Downloading image from: $url");
       final response = await http.get(Uri.parse(url));
 
       if (response.statusCode == 200) {
@@ -81,7 +78,6 @@ class UserProvider {
 
         final image = img.decodeImage(response.bodyBytes);
         if (image == null) {
-          print("Failed to decode image");
           return null;
         }
 
@@ -89,7 +85,6 @@ class UserProvider {
         final file = File(filePath);
 
         await file.writeAsBytes(img.encodePng(image));
-        print("Image saved to: $filePath");
 
         return filePath;
       } else {
@@ -213,9 +208,42 @@ class UserProvider {
     }
   }
 
-  Future<void> logout() async {
-    await _storage.delete(key: 'token');
+  Future<void> logout(String userId) async {
+    try{
+      await http.post(
+        Uri.parse('$url/logout'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({"id":userId}),
+      );
+      await _storage.delete(key: 'token');
+      final del = await _storage.delete(key: 'userData');
+    } catch (e, stackTrace) {
+      handleError(e, stackTrace);
+      rethrow;
+    }
   }
+
+  Future<bool> verifyToken(String token) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$url/token'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'token': token}),
+      );
+
+      if (response.statusCode == 200) {
+        return true;
+      } else {
+        final errorData = jsonDecode(response.body);
+        print('Token verification failed: ${errorData['message']}');
+        return false;
+      }
+    } catch (e, stackTrace) {
+      handleError(e, stackTrace);
+      return false;
+    }
+  }
+
 
   Future<String?> getToken() async {
     return await _storage.read(key: 'token');

@@ -64,23 +64,39 @@ class UserNotifier extends StateNotifier<State> {
 
   Future<void> currentUser() async {
     state = state.copyWith(isLoading: true, error: null);
+
     try {
       final userDataString = await _storage.read(key: 'userData');
-
+      final token = await _storage.read(key: 'token');
+      print("Token $token");
+      print("Token $userDataString");
       if (userDataString == null || userDataString.isEmpty) {
         state = state.copyWith(isLoading: false, user: null);
         return;
       }
 
+      if (token == null || token.isEmpty) {
+        await logout();
+        return;
+      }
+
+      final isTokenValid = await _provider.verifyToken(token);
+      if (!isTokenValid) {
+        await logout();
+        return;
+      }
+
       final Map<String, dynamic> userMap = jsonDecode(userDataString);
-      final String id = userMap['id'] as String;
-      final user = await _provider.getUserById(id);
+      final user = UserModel.fromJson(userMap);
       state = state.copyWith(user: user, isLoading: false);
-      return;
-    } catch (e) {
-      await _storage.delete(key: 'userData');
+    } catch (e, stackTrace) {
+      print('Error in currentUser: $e\n$stackTrace');
       state = state.copyWith(user: null, error: e.toString(), isLoading: false);
-      rethrow;
+
+      try {
+        await logout();
+      } catch (_) {
+      }
     }
   }
 
@@ -103,13 +119,19 @@ class UserNotifier extends StateNotifier<State> {
     }
   }
 
-  Future<void> logout() async {
-    state = state.copyWith(isLoading: true);
+  Future<void> logout([Map<String, dynamic>? userData]) async {
     try {
+      if (userData != null && userData.containsKey('id')) {
+        await _provider.logout(userData['id']);
+      }
+
       await _storage.delete(key: 'userData');
+      await _storage.delete(key: 'token');
+
       state = state.copyWith(user: null, isLoading: false);
-    } catch (e) {
-      state = state.copyWith(error: e.toString(), isLoading: false);
+    } catch (e, stackTrace) {
+      print('Error during logout: $e\n$stackTrace');
+      state = state.copyWith(user: null, isLoading: false);
     }
   }
 }

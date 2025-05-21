@@ -31,8 +31,8 @@ class _LoginState extends ConsumerState<Login> {
         print("Ada yang salah nih woiii: ${ref.read(userNotifierProvider).error}");
         return;
       } else {
-        print("Login successful! Navigating to Home");
-        // Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => Dashboard()));
+        MyPopup.show(context, title: "Login successful!");
+        Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => Dashboard()));
       }
     }
 
