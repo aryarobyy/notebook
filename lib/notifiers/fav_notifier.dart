@@ -123,5 +123,9 @@ class FavNotifier extends StateNotifier<State> {
       rethrow;
     }
   }
-
 }
+
+final favNotifierProvider =
+StateNotifierProvider<FavNotifier, State>(
+      (ref) => FavNotifier(ref.read(favServiceProvider)),
+);

@@ -7,7 +7,7 @@ import 'package:to_do_list/component/handler/error_handler.dart';
 import 'package:to_do_list/models/index.dart';
 
 final api = dotenv.env['SERVER_URI'];
-final url = '$api/user';
+final url = '$api/fav';
 
 class FavProvider {
   Future<FavModel> addFav ({
@@ -16,7 +16,7 @@ class FavProvider {
     required List<String> noteId
   }) async {
     try{
-      await http.post(
+      final res = await http.post(
         Uri.parse('$url/'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
@@ -26,8 +26,9 @@ class FavProvider {
         }),
       );
 
-      final fav = await getFavByTitle(creatorId: creatorId, title: title);
-      return fav;
+      final resData = jsonDecode(res.body)['data'];
+      final data = resData['data'];
+      return FavModel.fromJson(data);
     } catch (e, stackTrace){
       handleError(e, stackTrace);
       rethrow;
@@ -36,7 +37,7 @@ class FavProvider {
 
   Future<List<FavModel>> getFav(String creatorId) async {
     try {
-      final response = await http.post(
+      final response = await http.get(
         Uri.parse('$url/$creatorId'),
         headers: {
           'Content-Type': 'application/json',
@@ -44,12 +45,32 @@ class FavProvider {
       );
 
       if (response.statusCode == 200) {
-        final Map<String, dynamic> responseData = jsonDecode(response.body);
-        final List<dynamic> favList = responseData['data']['data'];
+        print("ASMSKAMAKS1");
 
-        return favList
-            .map((item) => FavModel.fromJson(item as Map<String, dynamic>))
-            .toList();
+        final Map<String, dynamic> responseData = jsonDecode(response.body);
+        print("Hello 1");
+        final Map<String, dynamic> data = responseData['data'];
+        print("Hello 2");
+        final List<dynamic> favList = data['data'] as List<dynamic>;
+
+        print("Dataaaa: $favList");
+
+        final favs = favList.map((e) {
+          try {
+            final parsed = FavModel.fromJson({
+              ...e,
+              'noteId': (e['noteId'] as List?)?.cast<String>(),
+            });
+            print("Parsed item: $parsed");
+            return parsed;
+          } catch (err) {
+            print("Error parsing item: $e\nError: $err");
+            rethrow;
+          }
+        }).toList();
+
+        print("Data: $data");
+        return favs;
       } else {
         throw Exception('Failed to get fav: ${response.body}');
       }
@@ -59,23 +80,26 @@ class FavProvider {
     }
   }
 
-
   Future<FavModel> getFavByTitle({
     required String creatorId,
     required String title
   }) async {
     try{
       final response = await http.post(
-        Uri.parse('$url/$title'),
+        Uri.parse('$url/title'),
         headers: {
           'Content-Type': 'application/json',
         },
-        body: jsonEncode({"title": title})
+        body: jsonEncode({
+          "creatorId": creatorId,
+          "title": title
+        })
       );
       if (response.statusCode == 200) {
         final Map<String, dynamic> responseData = jsonDecode(response.body);
         final favData = responseData['data'];
-        return FavModel.fromJson(favData['data']);
+        final data = favData['data'];
+        return FavModel.fromJson(data);
       } else {
         throw Exception('Failed to get user: ${response.body}');
       }
@@ -91,7 +115,7 @@ class FavProvider {
     required String newTitle,
   }) async {
     try{
-      final response = await http.put(
+      final res = await http.put(
         Uri.parse('$url/title'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
@@ -99,12 +123,13 @@ class FavProvider {
           "newTitle": newTitle
         }),
       );
-      if (response.statusCode != 200) {
-        throw Exception('Failed to update user: ${response.body}');
+      final resData = jsonDecode(res.body)['data'];
+      if (res.statusCode != 200) {
+        throw Exception('Failed to update user: ${res.body}');
       }
-      final dataUpdated = await getFavByTitle(creatorId: creatorId, title: newTitle);
+      final data = resData['data'];
 
-      return dataUpdated;
+      return FavModel.fromJson(data);
     } catch (e, stackTrace) {
       handleError(e, stackTrace);
       rethrow;
