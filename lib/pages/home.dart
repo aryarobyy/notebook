@@ -30,24 +30,26 @@ class _HomeState extends ConsumerState<Home> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted && widget.userData.id.isNotEmpty) {
         ref.read(favNotifierProvider.notifier).favByCreator(widget.userData.id);
-
-        final initialNavChoice = ref.read(navTitleProvider) ?? "All";
-
-        ref.read(favNotifierProvider.notifier).favByTitle(
-          widget.userData.id,
-          initialNavChoice,
-        );
-
-        if (initialNavChoice == "All") {
-          ref.read(noteNotifierProvider.notifier).noteByCreator(widget.userData.id);
-        } else {
-          ref.read(favNotifierProvider.notifier).favByTitle(widget.userData.id, initialNavChoice);
-        }
+        ref.read(noteNotifierProvider.notifier).noteByCreator(widget.userData.id);
       }
     });
-
   }
 
+  void _handleNavChange(String newTitle) async {
+    final currentTitle = ref.read(navTitleProvider);
+    if (newTitle == currentTitle) return;
+
+    ref.read(navTitleProvider.notifier).state = newTitle;
+    ref.read(loadingNavProvider.notifier).state = newTitle;
+
+    if (newTitle == "All") {
+      await ref.read(noteNotifierProvider.notifier).noteByCreator(widget.userData.id);
+    } else {
+
+    }
+
+    ref.read(loadingNavProvider.notifier).state = null;
+  }
   @override
   Widget build(BuildContext context) {
     SizeConfig.init(context);
@@ -145,26 +147,7 @@ class _HomeState extends ConsumerState<Home> {
 
   Widget _buildNav(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    final state = ref.watch(favNotifierProvider);
     final navTitle = ref.watch(navTitleProvider);
-
-    void handleNavChange(String newTitle) async {
-      final currentTitle = ref.read(navTitleProvider);
-      if (newTitle == currentTitle) return;
-
-      ref.read(navTitleProvider.notifier).state = newTitle;
-      ref.read(loadingNavProvider.notifier).state = newTitle;
-
-      if (newTitle == "All") {
-        await ref.read(noteNotifierProvider.notifier)
-            .noteByCreator(widget.userData.id);
-      } else {
-        await ref.read(favNotifierProvider.notifier)
-            .favByTitle(widget.userData.id, newTitle);
-      }
-
-      ref.read(loadingNavProvider.notifier).state = null;
-    }
 
     return SizedBox(
       height: 40,
@@ -174,29 +157,37 @@ class _HomeState extends ConsumerState<Home> {
           MyButton1(
             isTapped: navTitle == 'All',
             text: "All",
-            onPressed: (){
-              navTitle == 'All';
-              handleNavChange("All");
-            }
+            onPressed: () {
+              _handleNavChange("All");
+            },
           ),
           const SizedBox(width: 8),
           Expanded(
-            child: (state.isLoading)
-                ? const Center(child: SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2,)))
-                : (state.favourites == null || state.favourites!.isEmpty)
-                ? Center(
-              child: SizedBox.shrink()
-            )
-                : ListView.builder(
-              scrollDirection: Axis.horizontal,
-              itemCount: state.favourites!.length,
-              itemBuilder: (BuildContext context, int index) {
-                final favourite = state.favourites![index];
-                return MyButton1(
-                  text: favourite.id,
-                  isTapped: navTitle == favourite.id,
-                  onPressed: () {
-                    handleNavChange(favourite.id);
+            child: Consumer(
+              builder: (context, ref, child) {
+                final state = ref.watch(favNotifierProvider);
+
+                if (state.isLoading) {
+                  return const Center(child: SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2)));
+                }
+
+                if (state.favourites == null || state.favourites!.isEmpty) {
+                  return const SizedBox.shrink();
+                }
+
+                return ListView.builder(
+                  scrollDirection: Axis.horizontal,
+                  itemCount: state.favourites!.length,
+                  itemBuilder: (BuildContext context, int index) {
+                    final favourite = state.favourites![index];
+                    final currentNavTitle = ref.watch(navTitleProvider);
+                    return MyButton1(
+                      text: favourite.id,
+                      isTapped: currentNavTitle == favourite.id,
+                      onPressed: () {
+                        _handleNavChange(favourite.id);
+                      },
+                    );
                   },
                 );
               },

@@ -3,28 +3,30 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:to_do_list/models/user_model.dart';
+import 'package:to_do_list/provider/fav_provider.dart';
 import 'package:to_do_list/provider/user_provider.dart';
 
 final userServiceProvider = Provider((ref) => UserProvider());
+final secureStorageProvider = Provider((ref) => FlutterSecureStorage());
 
 @immutable
-class State {
+class UserState {
   final bool isLoading;
   final UserModel? user;
   final String? error;
 
-  const State({
+  const UserState({
     this.isLoading = false,
     this.user,
     this.error,
   });
 
-  State copyWith({
+  UserState copyWith({
     bool? isLoading,
     UserModel? user,
     String? error,
   }) {
-    return State(
+    return UserState(
       isLoading: isLoading ?? this.isLoading,
       user: user ?? this.user,
       error: error ?? this.error,
@@ -32,13 +34,13 @@ class State {
   }
 }
 
-class UserNotifier extends StateNotifier<State> {
-  UserNotifier(this._provider) : super(const State());
+class UserNotifier extends StateNotifier<UserState> {
+  UserNotifier(this._provider, this._storage) : super(const UserState());
 
   final UserProvider _provider;
-  final FlutterSecureStorage _storage = FlutterSecureStorage();
+  final FlutterSecureStorage _storage;
 
-  Future<void> login(String email, String password, WidgetRef ref) async {
+  Future<void> login(String email, String password) async {
     state = state.copyWith(isLoading: true, error: null);
     try {
       await _provider.login(email: email, password: password);
@@ -48,7 +50,7 @@ class UserNotifier extends StateNotifier<State> {
     }
   }
 
-  Future<void> register(String username, String email, String password, WidgetRef ref) async {
+  Future<void> register(String username, String email, String password) async {
     state = state.copyWith(isLoading: true, error: null);
     try {
       await _provider.register(
@@ -56,7 +58,7 @@ class UserNotifier extends StateNotifier<State> {
         email: email,
         password: password,
       );
-      await login(email, password, ref);
+      // await login(email, password, ref);
     } catch (e) {
       state = state.copyWith(error: e.toString(), isLoading: false);
     }
@@ -67,36 +69,36 @@ class UserNotifier extends StateNotifier<State> {
 
     try {
       final userDataString = await _storage.read(key: 'userData');
-      final token = await _storage.read(key: 'token');
-      print("Token $token");
-      print("Token $userDataString");
+
       if (userDataString == null || userDataString.isEmpty) {
         state = state.copyWith(isLoading: false, user: null);
         return;
       }
 
-      if (token == null || token.isEmpty) {
-        await logout();
-        return;
-      }
-
-      final isTokenValid = await _provider.verifyToken(token);
-      if (!isTokenValid) {
-        await logout();
-        return;
-      }
-
-      final Map<String, dynamic> userMap = jsonDecode(userDataString);
-      final user = UserModel.fromJson(userMap);
-      state = state.copyWith(user: user, isLoading: false);
-    } catch (e, stackTrace) {
-      print('Error in currentUser: $e\n$stackTrace');
-      state = state.copyWith(user: null, error: e.toString(), isLoading: false);
-
+      Map<String, dynamic> userMap;
       try {
+        userMap = jsonDecode(userDataString);
+      } catch (e, s) {
+        state = state.copyWith(user: null, error: "Gagal parse JSON: ${e.toString()}", isLoading: false);
         await logout();
-      } catch (_) {
+        return;
       }
+
+      UserModel user;
+      try {
+        user = UserModel.fromJson(userMap);
+      } catch (e, s) {
+        state = state.copyWith(user: null, error: "Gagal konversi data user: ${e.toString()}", isLoading: false);
+        await logout();
+        return;
+      }
+
+      state = state.copyWith(user: user, isLoading: false);
+
+    } catch (e, stackTrace) {
+      print('currentUser - Error umum di luar dugaan: $e\n$stackTrace');
+      state = state.copyWith(user: null, error: e.toString(), isLoading: false);
+      await logout();
     }
   }
 
@@ -114,13 +116,14 @@ class UserNotifier extends StateNotifier<State> {
       state = state.copyWith(isLoading: false, user: data);
       return data;
     } catch (e) {
-      state = state.copyWith(user: null, error: e.toString(), isLoading: false);
+      state = state.copyWith(error: e.toString(), isLoading: false);
       rethrow;
     }
   }
 
   Future<void> logout([Map<String, dynamic>? userData]) async {
     try {
+      state = state.copyWith(isLoading: true, error: null);
       if (userData != null && userData.containsKey('id')) {
         await _provider.logout(userData['id']);
       }
@@ -134,9 +137,24 @@ class UserNotifier extends StateNotifier<State> {
       state = state.copyWith(user: null, isLoading: false);
     }
   }
+
+  Future<void> signIn() async {
+    try {
+      state = state.copyWith(isLoading: true, error: null);
+      await _provider.googleSignIn();
+    } catch (e, stackTrace) {
+      print('Error during signIn: $e\n$stackTrace');
+      state = state.copyWith(user: null, error: e.toString(), isLoading: false);
+    }
+  }
+
+
 }
 
 final userNotifierProvider =
-  StateNotifierProvider<UserNotifier, State>(
-      (ref) => UserNotifier(ref.read(userServiceProvider)),
+  StateNotifierProvider<UserNotifier, UserState>(
+      (ref) => UserNotifier(
+        ref.read(userServiceProvider),
+        ref.read(secureStorageProvider),
+      ),
 );

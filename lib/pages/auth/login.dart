@@ -23,8 +23,7 @@ class _LoginState extends ConsumerState<Login> {
 
       await notifier.login(
         _emailController.text.trim(),
-        _passwordController.text,
-        ref,
+        _passwordController.text
       );
 
       if (ref.read(userNotifierProvider).error != null) {
@@ -41,7 +40,7 @@ class _LoginState extends ConsumerState<Login> {
         child: SingleChildScrollView(
           child: Padding(
             padding: EdgeInsets.symmetric(
-              horizontal: size.width * 0.02,
+              horizontal: size.width * 0.05,
               vertical: size.height * 0.03,
             ),
             child: Column(
@@ -112,6 +111,14 @@ class _LoginState extends ConsumerState<Login> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     GestureDetector(
+                      onTap: () async {
+                        try{
+                          await notifier.signIn();
+                          Navigator.push(context, MaterialPageRoute(builder: (_) => Dashboard()));
+                        } catch (e) {
+                          return;
+                        }
+                      },
                       child: Image.asset(
                           "assets/images/google.png",
                           width: size.width * 0.12

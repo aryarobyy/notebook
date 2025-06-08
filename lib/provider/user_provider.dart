@@ -112,13 +112,6 @@ class UserProvider {
           'password': password,
         }),
       );
-
-      if (response.statusCode == 200 || response.statusCode == 201) {
-        final data = jsonDecode(response.body);
-        await _storage.write(key: 'token', value: data['token']);
-      } else {
-        throw Exception('Failed to register: ${response.body}');
-      }
     } catch (e, stackTrace){
       handleError(e, stackTrace);
       rethrow;
@@ -244,6 +237,17 @@ class UserProvider {
     }
   }
 
+  Future<void> googleSignIn () async {
+    try{
+      await http.post(
+        Uri.parse('$url/singIn'),
+        headers: {'Content-Type': 'application/json'},
+      );
+    } catch (e, stackTrace) {
+      handleError(e, stackTrace);
+      rethrow;
+    }
+  }
 
   Future<String?> getToken() async {
     return await _storage.read(key: 'token');
