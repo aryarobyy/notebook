@@ -1,6 +1,8 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_quill/flutter_quill.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:to_do_list/component/note_text_field.dart';
 import 'package:to_do_list/component/size/size_config.dart';
@@ -20,24 +22,37 @@ class AddNote extends ConsumerStatefulWidget {
 
 class _AddNoteState extends ConsumerState<AddNote> {
   final TextEditingController _titleController = TextEditingController();
-  final TextEditingController _contentController = TextEditingController();
+  final QuillController _contentController = QuillController.basic();
   final List<String> _tags = [];
 
-  final isEditProvider = StateProvider<bool>((ref) {
-    return false;
-  });
-  final isBoldProvider = StateProvider<bool>((ref) {
-    return false;
-  });
-  final isItalicProvider = StateProvider<bool>((ref) {
-    return false;
-  });
-  final isUnderlinedProvider = StateProvider<bool>((ref) {
-    return false;
-  });
-  final circleButtonSelectedProvider = StateProvider<bool>((ref) {
-    return false;
-  });
+  final isEditProvider = StateProvider<bool>((ref) => false);
+  final isBoldProvider = StateProvider<bool>((ref) => false);
+  final isItalicProvider = StateProvider<bool>((ref) => false);
+  final isUnderlinedProvider = StateProvider<bool>((ref) => false);
+  final circleButtonSelectedProvider = StateProvider<bool>((ref) => false);
+
+  @override
+  void initState() {
+    super.initState();
+    _contentController.addListener(_updateFormatStates);
+  }
+
+  @override
+  void dispose() {
+    _contentController.removeListener(_updateFormatStates);
+    _titleController.dispose();
+    super.dispose();
+  }
+
+  void _updateFormatStates() {
+    final attrs = _contentController
+        .getSelectionStyle()
+        .attributes;
+
+    ref.read(isBoldProvider.notifier).state = attrs.keys.contains(Attribute.bold.key);
+    ref.read(isItalicProvider.notifier).state = attrs.keys.contains(Attribute.italic.key);
+    ref.read(isUnderlinedProvider.notifier).state = attrs.keys.contains(Attribute.underline.key);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -49,7 +64,7 @@ class _AddNoteState extends ConsumerState<AddNote> {
             MyHeader(
               title: "Add Note",
               onBackPressed: () {
-                _titleController.text.isNotEmpty || _contentController.text.isNotEmpty ?
+                _titleController.text.isNotEmpty ?
                   MyPopup.show(
                     context, title: "Yakin gamau lanjut?",
                     agreeText: "Yakin",
@@ -83,15 +98,19 @@ class _AddNoteState extends ConsumerState<AddNote> {
 
                         },
                       ),
-                      NoteTextField(
-                        controller: _contentController,
-                        inputText: "Description Task",
-                        onChanged: (value) {
-                          // ref.read(noteNotifierProvider.notifier)
-                          //   .onContentChanged(value, noteId, creatorId)
-                        },
-                        maxLine: 4,
-                      ),
+                      Container(
+                        height: 250,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: QuillEditor.basic(
+                          controller: _contentController,
+                          config: QuillEditorConfig(
+                            padding: EdgeInsets.all(12),
+                            placeholder: 'Description Task',
+                          ),
+                        ),
+                      )
                     ],
                   ),
                 ),
@@ -112,8 +131,12 @@ class _AddNoteState extends ConsumerState<AddNote> {
   Widget _buildButton(BuildContext context){
     final cs = Theme.of(context).colorScheme;
     final notifier = ref.read(noteNotifierProvider.notifier);
-    final bool isEdit = ref.watch(isEditProvider);
     final size = SizeConfig;
+
+    final isEdit = ref.watch(isEditProvider);
+    final isBold = ref.watch(isBoldProvider);
+    final isItalic = ref.watch(isItalicProvider);
+    final isUnderlined = ref.watch(isUnderlinedProvider);
 
     void _postNote() async {
       if (_titleController.text.isEmpty) {
@@ -126,17 +149,49 @@ class _AddNoteState extends ConsumerState<AddNote> {
         return;
       }
 
+      final delta = _contentController.document.toDelta();
+      final contentAsJsonString = jsonEncode(delta.toJson());
+
+      final notifier = ref.read(noteNotifierProvider.notifier);
       final note = await notifier.addNote(
         widget.userId,
         _titleController.text.trim(),
-        _contentController.text.trim(),
+        contentAsJsonString,
       );
+
       MyPopup.show(context, title: "Catatan berhasil dibuat");
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
-          builder: (_) => Note(creatorId: widget.userId, noteId: note.id)
-        )
+          builder: (_) => Note(creatorId: widget.userId, noteId: note.id),
+        ),
+      );
+    }
+
+    void _toggleFormatAttribute(Attribute attribute) {
+      final isActive = _contentController
+          .getSelectionStyle()
+          .attributes
+          .containsKey(attribute.key);
+
+      if (isActive) {
+        _contentController.formatSelection(Attribute(attribute.key, AttributeScope.inline, null));
+      } else {
+        _contentController.formatSelection(attribute);
+      }
+    }
+
+
+    Widget buildFormatButton(IconData icon, bool isActive, VoidCallback onPressed) {
+      return IconButton(
+        onPressed: onPressed,
+        icon: Icon(
+          icon,
+          color: isActive ? cs.primary : cs.onSurface.withOpacity(0.6),
+        ),
+        style: IconButton.styleFrom(
+          backgroundColor: isActive ? cs.primary.withOpacity(0.1) : Colors.transparent,
+        ),
       );
     }
 
@@ -167,6 +222,7 @@ class _AddNoteState extends ConsumerState<AddNote> {
           child: isEdit
               ?
           Container(
+            key: const ValueKey('format-toolbar'),
             padding: const EdgeInsets.all(2),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(26),
@@ -176,25 +232,20 @@ class _AddNoteState extends ConsumerState<AddNote> {
               key: const ValueKey('button-row'),
               mainAxisSize: MainAxisSize.min,
               children: [
-                IconButton(
-                  onPressed: () {
-
-                  },
-                  icon: const Icon(Icons.format_bold)
+                buildFormatButton(
+                  Icons.format_bold,
+                  isBold,
+                      () => _toggleFormatAttribute(Attribute.bold, ),
                 ),
-                const SizedBox(width: 24),
-                IconButton(
-                    onPressed: () {
-
-                    },
-                    icon: const Icon(Icons.format_italic)
+                buildFormatButton(
+                  Icons.format_italic,
+                  isItalic,
+                      () => _toggleFormatAttribute(Attribute.italic, ),
                 ),
-                const SizedBox(width: 24),
-                IconButton(
-                    onPressed: () {
-
-                    },
-                    icon: const Icon(Icons.format_underline)
+                buildFormatButton(
+                  Icons.format_underline,
+                  isUnderlined,
+                      () => _toggleFormatAttribute(Attribute.underline, ),
                 ),
               ],
             ),
@@ -208,7 +259,13 @@ class _AddNoteState extends ConsumerState<AddNote> {
           icon: Icon(Icons.edit, color: cs.onSurface),
           iconSize: 30,
           onPressed: () {
-            ref.read(isEditProvider.notifier).update((state) => !state);
+            final bool isNowEditing = ref.read(isEditProvider.notifier).update((state) => !state);
+
+            if (!isNowEditing) {
+              ref.read(isBoldProvider.notifier).state = false;
+              ref.read(isItalicProvider.notifier).state = false;
+              ref.read(isUnderlinedProvider.notifier).state = false;
+            }
           },
         ),
         const SizedBox(width: 24),

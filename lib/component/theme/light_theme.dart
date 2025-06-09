@@ -1,35 +1,30 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-final ColorScheme _lightColorScheme = const ColorScheme.light(
-    primary: Color(0xFFB39DDB),
-    secondary: Color(0xFFFFA726),
-    surface: Color(0xFFFFFFFF),
-    background: Color(0xFFFAFAFA),
-
-    onPrimary: Color(0xFF1A1A1A),
-    onSecondary: Color(0xFF212121),
-    onSurface: Color(0xFF222222),
-    onBackground: Color(0xFF333333),
-);
-
-
 final ThemeData lightTheme = ThemeData(
     brightness: Brightness.light,
     colorScheme: const ColorScheme.light(
-        primary: Color(0xFF9370DB), // Ungu
-        surface: Color(0xFFFFFFFF),
+        primary: Color(0xFF9370DB),
         secondary: Color(0xFFFF69B4),
+        background: Color(0xFFFFFFFF),
+        surface: Color(0xFFFFFFFF),
+        onPrimary: Color(0xFFFFFFFF),
+        onSecondary: Color(0xFF000000),
+        onBackground: Color(0xFF1F1F1F),
+        onSurface: Color(0xFF3A3A3A),
+        error: Colors.red,
+        onError: Colors.white,
     ),
-    scaffoldBackgroundColor: Color(0xFFF2F2F2),
-    floatingActionButtonTheme: FloatingActionButtonThemeData(
+    scaffoldBackgroundColor: const Color(0xFFFFFFFF),
+    floatingActionButtonTheme: const FloatingActionButtonThemeData(
         backgroundColor: Color(0xFF9370DB),
+        foregroundColor: Colors.white,
     ),
     textTheme: GoogleFonts.robotoTextTheme(
         ThemeData.light().textTheme,
     ).apply(
-        bodyColor: _lightColorScheme.onBackground,
-        displayColor: _lightColorScheme.onBackground,
+        bodyColor: const Color(0xFF000000),
+        displayColor: const Color(0xFF000000),
     ),
     fontFamily: GoogleFonts.roboto().fontFamily,
 );

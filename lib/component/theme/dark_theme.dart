@@ -1,35 +1,30 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-final ColorScheme _darkColorScheme = const ColorScheme.dark(
-  primary: Color(0xFFB39DDB),
-  secondary: Color(0xFFFFA726),
-  surface: Color(0xFF1E1E2C),
-  background: Color(0xFF121212),
-
-  onPrimary: Color(0xFF121212),
-  onSecondary: Color(0xFF121212),
-  onSurface: Color(0xFFEAEAEA),
-  onBackground: Color(0xFFCCCCCC),
-);
-
-
 final ThemeData darkTheme = ThemeData(
-    brightness: Brightness.dark,
-    colorScheme: const ColorScheme.dark(
-      primary: Color(0xFF9370DB),
-      surface: Color(0xFF1E1E2C), // Background
-      secondary: Color(0xFFFF69B4),
-    ),
-    scaffoldBackgroundColor: Color(0xFF121212),
-    floatingActionButtonTheme: FloatingActionButtonThemeData(
-      backgroundColor: Color(0xFF9370DB),
-    ),
-    textTheme: GoogleFonts.robotoTextTheme(
-      ThemeData.dark().textTheme,
-    ).apply(
-      bodyColor: _darkColorScheme.onBackground,
-      displayColor: _darkColorScheme.onBackground,
-    ),
-    fontFamily: GoogleFonts.roboto().fontFamily,
+  brightness: Brightness.dark,
+  colorScheme: const ColorScheme.dark(
+    primary: Color(0xFF9370DB),
+    secondary: Color(0xFFFF69B4),
+    background: Color(0xFF000000),
+    surface: Color(0xFF000000),
+    onPrimary: Color(0xFFFFFFFF),
+    onSecondary: Color(0xFF000000),
+    onBackground: Color(0xFFEAEAEA),
+    onSurface: Color(0xFFD1D1D1),
+    error: Colors.redAccent,
+    onError: Colors.white,
+  ),
+  scaffoldBackgroundColor: const Color(0xFF000000),
+  floatingActionButtonTheme: const FloatingActionButtonThemeData(
+    backgroundColor: Color(0xFF9370DB),
+    foregroundColor: Colors.white,
+  ),
+  textTheme: GoogleFonts.robotoTextTheme(
+    ThemeData.dark().textTheme,
+  ).apply(
+    bodyColor: const Color(0xFFFFFFFF),
+    displayColor: const Color(0xFFFFFFFF)
+  ),
+  fontFamily: GoogleFonts.roboto().fontFamily,
 );
