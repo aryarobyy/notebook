@@ -31,30 +31,27 @@ class MyPopup extends StatelessWidget {
       context: context,
       barrierDismissible: true,
       barrierLabel: MaterialLocalizations.of(context).modalBarrierDismissLabel,
-      transitionDuration: const Duration(milliseconds: 300),
+      transitionDuration: const Duration(milliseconds: 250),
       pageBuilder: (ctx, anim, secAnim) {
-        return Center(
-          child: MyPopup(
-            title: title,
-            content: content,
-            agreeText: agreeText,
-            disagreeText: disagreeText,
-            onAgreePressed: () {
-              Navigator.of(ctx).pop();
-              if (onAgreePressed != null) onAgreePressed();
-            },
-            onDisagreePressed: () {
-              Navigator.of(ctx).pop();
-              if (onDisagreePressed != null) onDisagreePressed();
-            },
-          ),
+        return MyPopup(
+          title: title,
+          content: content,
+          agreeText: agreeText,
+          disagreeText: disagreeText,
+          onAgreePressed: onAgreePressed,
+          onDisagreePressed: onDisagreePressed,
         );
       },
       transitionBuilder: (ctx, animation, secAnimation, child) {
+        final curvedAnimation = CurvedAnimation(
+          parent: animation,
+          curve: Curves.easeOutCubic,
+        );
+
         return FadeTransition(
-          opacity: animation,
+          opacity: curvedAnimation,
           child: ScaleTransition(
-            scale: animation,
+            scale: curvedAnimation,
             child: child,
           ),
         );
@@ -65,40 +62,7 @@ class MyPopup extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-
-    final buttons = <Widget>[];
-    if (disagreeText != null) {
-      buttons.add(
-        ElevatedButton(
-          style: ElevatedButton.styleFrom(
-            backgroundColor: cs.primary,
-            shape: const StadiumBorder(),
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-          ),
-          onPressed: onDisagreePressed,
-          child: Text(
-            disagreeText!,
-            style: const TextStyle(color: Colors.white, fontSize: 16),
-          ),
-        ),
-      );
-    }
-    if (agreeText != null) {
-      buttons.add(
-        ElevatedButton(
-          style: ElevatedButton.styleFrom(
-            backgroundColor: cs.primary,
-            shape: const StadiumBorder(),
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-          ),
-          onPressed: onAgreePressed,
-          child: Text(
-            agreeText!,
-            style: const TextStyle(color: Colors.white, fontSize: 16),
-          ),
-        ),
-      );
-    }
+    final textTheme = Theme.of(context).textTheme;
 
     return Dialog(
       shape: RoundedRectangleBorder(
@@ -106,35 +70,91 @@ class MyPopup extends StatelessWidget {
       ),
       insetPadding: const EdgeInsets.symmetric(horizontal: 40, vertical: 24),
       child: Padding(
-        padding: const EdgeInsets.all(20.0),
+        padding: const EdgeInsets.all(24.0),
         child: Column(
           mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Text(
               title,
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              style: textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
               textAlign: TextAlign.center,
             ),
             if (content != null) ...[
               const SizedBox(height: 12),
               Text(
                 content!,
-                style: const TextStyle(fontSize: 16),
+                style: textTheme.bodyLarge,
                 textAlign: TextAlign.center,
               ),
             ],
-            if (buttons.isNotEmpty) ...[
-              const SizedBox(height: 20),
-              Row(
-                mainAxisAlignment: buttons.length == 1
-                    ? MainAxisAlignment.center
-                    : MainAxisAlignment.spaceBetween,
-                children: buttons,
-              ),
-            ],
+            const SizedBox(height: 24),
+            _buildButtons(context),
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildButtons(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+
+    final buttons = <Widget>[];
+
+    if (disagreeText != null) {
+      buttons.add(
+        Expanded(
+          child: OutlinedButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+              onDisagreePressed?.call();
+            },
+            style: OutlinedButton.styleFrom(
+              foregroundColor: cs.primary,
+              padding: const EdgeInsets.symmetric(vertical: 12),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(30),
+              ),
+            ),
+            child: Text(disagreeText!),
+          ),
+        ),
+      );
+    }
+
+    if (disagreeText != null && agreeText != null) {
+      buttons.add(const SizedBox(width: 16));
+    }
+
+    if (agreeText != null) {
+      buttons.add(
+        Expanded(
+          child: ElevatedButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+              onAgreePressed?.call();
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: cs.primary,
+              foregroundColor: cs.onPrimary,
+              padding: const EdgeInsets.symmetric(vertical: 12),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(30),
+              ),
+            ),
+            child: Text(agreeText!),
+          ),
+        ),
+      );
+    }
+
+    if (buttons.length == 1) {
+      return Center(child: buttons.first);
+    }
+
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: buttons,
     );
   }
 }

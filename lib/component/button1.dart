@@ -32,8 +32,8 @@ class MyButton1 extends ConsumerWidget {
         child: ElevatedButton(
           onPressed: onPressed,
           style: ElevatedButton.styleFrom(
-            backgroundColor: isTapped ? cs.primary : cs.onPrimary,
-            foregroundColor: isTapped ? cs.surface : cs.onSecondary,
+            backgroundColor: isTapped ? cs.primary : cs.surfaceVariant.withOpacity(0.876),
+            foregroundColor: isTapped ? Colors.white : cs.onSurface.withOpacity(0.7),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(isRounded ? 20.0 : 8.0),
             ),
