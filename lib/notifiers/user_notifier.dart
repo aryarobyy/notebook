@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:to_do_list/models/user_model.dart';
-import 'package:to_do_list/provider/fav_provider.dart';
+import 'package:to_do_list/provider/category_provider.dart';
 import 'package:to_do_list/provider/user_provider.dart';
 
 final userServiceProvider = Provider((ref) => UserProvider());
@@ -79,7 +79,10 @@ class UserNotifier extends StateNotifier<UserState> {
       try {
         userMap = jsonDecode(userDataString);
       } catch (e, s) {
-        state = state.copyWith(user: null, error: "Gagal parse JSON: ${e.toString()}", isLoading: false);
+        state = state.copyWith(
+            user: null,
+            error: "Gagal parse JSON: ${e.toString()}",
+            isLoading: false);
         await logout();
         return;
       }
@@ -88,13 +91,15 @@ class UserNotifier extends StateNotifier<UserState> {
       try {
         user = UserModel.fromJson(userMap);
       } catch (e, s) {
-        state = state.copyWith(user: null, error: "Gagal konversi data user: ${e.toString()}", isLoading: false);
+        state = state.copyWith(
+            user: null,
+            error: "Gagal konversi data user: ${e.toString()}",
+            isLoading: false);
         await logout();
         return;
       }
 
       state = state.copyWith(user: user, isLoading: false);
-
     } catch (e, stackTrace) {
       print('currentUser - Error umum di luar dugaan: $e\n$stackTrace');
       state = state.copyWith(user: null, error: e.toString(), isLoading: false);
@@ -102,16 +107,14 @@ class UserNotifier extends StateNotifier<UserState> {
     }
   }
 
-  Future<UserModel> update ({
+  Future<UserModel> update({
     required String userId,
     required Map<String, dynamic> updatedData,
   }) async {
     state = state.copyWith(isLoading: true, error: null);
-    try{
-      final data = await _provider.updateUser(
-        userId: userId,
-        updatedData: updatedData
-      );
+    try {
+      final data =
+          await _provider.updateUser(userId: userId, updatedData: updatedData);
 
       state = state.copyWith(isLoading: false, user: data);
       return data;
@@ -147,14 +150,11 @@ class UserNotifier extends StateNotifier<UserState> {
       state = state.copyWith(user: null, error: e.toString(), isLoading: false);
     }
   }
-
-
 }
 
-final userNotifierProvider =
-  StateNotifierProvider<UserNotifier, UserState>(
-      (ref) => UserNotifier(
-        ref.read(userServiceProvider),
-        ref.read(secureStorageProvider),
-      ),
+final userNotifierProvider = StateNotifierProvider<UserNotifier, UserState>(
+  (ref) => UserNotifier(
+    ref.read(userServiceProvider),
+    ref.read(secureStorageProvider),
+  ),
 );

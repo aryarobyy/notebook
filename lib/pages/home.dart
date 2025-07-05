@@ -5,7 +5,7 @@ import 'package:to_do_list/component/card.dart';
 import 'package:to_do_list/component/size/size_config.dart';
 import 'package:to_do_list/component/text.dart';
 import 'package:to_do_list/models/index.dart';
-import 'package:to_do_list/notifiers/fav_notifier.dart';
+import 'package:to_do_list/notifiers/category_notifier.dart';
 import 'package:to_do_list/notifiers/note_notifier.dart';
 import 'package:to_do_list/pages/note/note.dart';
 import 'package:to_do_list/pages/profile_page.dart';
@@ -29,8 +29,12 @@ class _HomeState extends ConsumerState<Home> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted && widget.userData.id.isNotEmpty) {
-        ref.read(favNotifierProvider.notifier).favByCreator(widget.userData.id);
-        ref.read(noteNotifierProvider.notifier).noteByCreator(widget.userData.id);
+        ref
+            .read(categoryNotifierProvider.notifier)
+            .categoryByCreator(widget.userData.id);
+        ref
+            .read(noteNotifierProvider.notifier)
+            .noteByCreator(widget.userData.id);
       }
     });
   }
@@ -43,13 +47,14 @@ class _HomeState extends ConsumerState<Home> {
     ref.read(loadingNavProvider.notifier).state = newTitle;
 
     if (newTitle == "All") {
-      await ref.read(noteNotifierProvider.notifier).noteByCreator(widget.userData.id);
-    } else {
-
-    }
+      await ref
+          .read(noteNotifierProvider.notifier)
+          .noteByCreator(widget.userData.id);
+    } else {}
 
     ref.read(loadingNavProvider.notifier).state = null;
   }
+
   @override
   Widget build(BuildContext context) {
     SizeConfig.init(context);
@@ -59,87 +64,91 @@ class _HomeState extends ConsumerState<Home> {
 
     final cs = Theme.of(context).colorScheme;
     return Scaffold(
-      appBar: AppBar(
-        automaticallyImplyLeading: false,
-        centerTitle: true,
-        title: const Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            MyText(
-              "Home",
-              fontSize: 22,
-              fontWeight: FontWeight.w600,
-            ),
-          ],
-        ),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.only(left: 12.0, right: 12.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const SizedBox(height: 15),
-            Row(
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const MyText(
-                        "Welcome back",
-                        fontSize: 18,
-                        fontWeight: FontWeight.w500,
-                      ),
-                      const SizedBox(height: 4),
-                      MyText(
-                        widget.userData.username,
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ],
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.only(left: 12.0),
-                  child: InkWell(
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => ProfilePage(userData: widget.userData),
+      // appBar: AppBar(
+      //   automaticallyImplyLeading: false,
+      //   centerTitle: true,
+      //   title: const Row(
+      //     mainAxisAlignment: MainAxisAlignment.center,
+      //     children: [
+      //       MyText(
+      //         "Home",
+      //         fontSize: 22,
+      //         fontWeight: FontWeight.w600,
+      //       ),
+      //     ],
+      //   ),
+      // ),
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.only(left: 12.0, right: 12.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const SizedBox(height: 15),
+              Row(
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const MyText(
+                          "Welcome back",
+                          fontSize: 18,
+                          fontWeight: FontWeight.w500,
                         ),
-                      );
-                    },
-                    child: CircleAvatar(
-                      radius: 30,
-                      backgroundColor: cs.primary.withOpacity(0.4),
-                      backgroundImage: widget.userData.image != null && widget.userData.image!.isNotEmpty
-                          ? NetworkImage(widget.userData.image!)
-                          : const AssetImage("assets/bayu.jpg") as ImageProvider,
-                      onBackgroundImageError: (_, __) {
-                      },
+                        const SizedBox(height: 4),
+                        MyText(
+                          widget.userData.username,
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
                     ),
                   ),
-                )
-              ],
-            ),
-            const SizedBox(height: 20),
-            const MyCard(
-              title: "Bayu Nikah",
-              subtitle: "Besok",
-            ),
-            const SizedBox(height: 15),
-            _buildNav(context),
-            const SizedBox(height: 15),
-            const MyText(
-              "Your Activities",
-              fontSize: 18,
-              fontWeight: FontWeight.w600,
-            ),
-            const SizedBox(height: 10),
-            Expanded(child: _buildActivity(context))
-          ],
+                  Padding(
+                    padding: const EdgeInsets.only(left: 12.0),
+                    child: InkWell(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) =>
+                                ProfilePage(userData: widget.userData),
+                          ),
+                        );
+                      },
+                      child: CircleAvatar(
+                        radius: 30,
+                        backgroundColor: cs.primary.withOpacity(0.4),
+                        backgroundImage: widget.userData.image != null &&
+                                widget.userData.image!.isNotEmpty
+                            ? NetworkImage(widget.userData.image!)
+                            : const AssetImage("assets/bayu.jpg")
+                                as ImageProvider,
+                        onBackgroundImageError: (_, __) {},
+                      ),
+                    ),
+                  )
+                ],
+              ),
+              const SizedBox(height: 20),
+              const MyCard(
+                title: "Bayu Nikah",
+                subtitle: "Besok",
+              ),
+              const SizedBox(height: 15),
+              _buildNav(context),
+              const SizedBox(height: 15),
+              const MyText(
+                "Your Activities",
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+              ),
+              const SizedBox(height: 10),
+              Expanded(child: _buildActivity(context))
+            ],
+          ),
         ),
       ),
     );
@@ -165,27 +174,32 @@ class _HomeState extends ConsumerState<Home> {
           Expanded(
             child: Consumer(
               builder: (context, ref, child) {
-                final state = ref.watch(favNotifierProvider);
+                final state = ref.watch(categoryNotifierProvider);
 
                 if (state.isLoading) {
-                  return const Center(child: SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2)));
+                  return const Center(
+                      child: SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(strokeWidth: 2)));
                 }
 
-                if (state.favourites == null || state.favourites!.isEmpty) {
+                if (state.categoryourites == null ||
+                    state.categoryourites!.isEmpty) {
                   return const SizedBox.shrink();
                 }
 
                 return ListView.builder(
                   scrollDirection: Axis.horizontal,
-                  itemCount: state.favourites!.length,
+                  itemCount: state.categoryourites!.length,
                   itemBuilder: (BuildContext context, int index) {
-                    final favourite = state.favourites![index];
+                    final categoryourite = state.categoryourites![index];
                     final currentNavTitle = ref.watch(navTitleProvider);
                     return MyButton1(
-                      text: favourite.id,
-                      isTapped: currentNavTitle == favourite.id,
+                      text: categoryourite.id,
+                      isTapped: currentNavTitle == categoryourite.id,
                       onPressed: () {
-                        _handleNavChange(favourite.id);
+                        _handleNavChange(categoryourite.id);
                       },
                     );
                   },
@@ -195,16 +209,14 @@ class _HomeState extends ConsumerState<Home> {
           ),
           const SizedBox(width: 8),
           InkWell(
-            onTap: () {
-
-            },
+            onTap: () {},
             child: Container(
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(25),
-                color: cs.surfaceVariant,
+                color: cs.surface,
               ),
-              child: Icon(Icons.add, color: cs.onSurfaceVariant, size: 20),
+              child: Icon(Icons.add, color: cs.onSurface, size: 20),
             ),
           ),
         ],
@@ -214,7 +226,7 @@ class _HomeState extends ConsumerState<Home> {
 
   Widget _buildActivity(BuildContext context) {
     final noteState = ref.watch(noteNotifierProvider);
-    final favState = ref.watch(favNotifierProvider);
+    final categoryState = ref.watch(categoryNotifierProvider);
     final navTitle = ref.watch(navTitleProvider);
 
     if (noteState.isLoading) {
@@ -222,7 +234,7 @@ class _HomeState extends ConsumerState<Home> {
     }
 
     final allNotes = noteState.notes;
-    final favNoteIds = favState.favourite?.noteId;
+    final categoryNoteIds = categoryState.categoryourite?.noteId;
 
     if (allNotes == null || allNotes.isEmpty) {
       return const Center(
@@ -236,7 +248,9 @@ class _HomeState extends ConsumerState<Home> {
 
     final filteredNotes = (navTitle == "All")
         ? allNotes
-        : allNotes.where((note) => favNoteIds?.contains(note.id) ?? false).toList();
+        : allNotes
+            .where((note) => categoryNoteIds?.contains(note.id) ?? false)
+            .toList();
 
     if (filteredNotes.isEmpty) {
       return const Center(
@@ -269,7 +283,9 @@ class _HomeState extends ConsumerState<Home> {
                 );
               } else {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text("Cannot open note. Missing required information.")),
+                  const SnackBar(
+                      content: Text(
+                          "Cannot open note. Missing required information.")),
                 );
               }
             },
@@ -282,7 +298,6 @@ class _HomeState extends ConsumerState<Home> {
       },
     );
   }
-
 
   String _scheduleStatus(DateTime? schedule) {
     if (schedule == null) {
