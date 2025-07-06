@@ -69,28 +69,28 @@ class NoteProvider {
     }
   }
 
-  Future<NoteModel> updateNote(
-      {required String noteId,
-      required String creatorId,
-      required Map<String, dynamic> updatedData}) async {
-    try {
-      final response = await http.put(
-        Uri.parse('$url/$noteId'),
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode(updatedData),
-      );
+  Future<NoteModel> updateNote({
+    required String noteId,
+    required String creatorId,
+    required Map<String, dynamic> updatedData}) async {
+      try {
+        final response = await http.put(
+          Uri.parse('$url/$noteId'),
+          headers: {'Content-Type': 'application/json'},
+          body: jsonEncode(updatedData),
+        );
 
-      if (response.statusCode != 200) {
-        throw Exception('Failed to update note: ${response.body}');
+        if (response.statusCode != 200) {
+          throw Exception('Failed to update note: ${response.body}');
+        }
+        final noteUpdated =
+            await getNoteById(creatorId: creatorId, noteId: noteId);
+
+        return noteUpdated;
+      } catch (e, stackTrace) {
+        handleError(e, stackTrace);
+        rethrow;
       }
-      final noteUpdated =
-          await getNoteById(creatorId: creatorId, noteId: noteId);
-
-      return noteUpdated;
-    } catch (e, stackTrace) {
-      handleError(e, stackTrace);
-      rethrow;
-    }
   }
 
   Future<List<NoteModel>> getNotes(String creatorId) async {

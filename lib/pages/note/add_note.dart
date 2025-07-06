@@ -26,6 +26,7 @@ class _AddNoteState extends ConsumerState<AddNote> {
   final List<String> _tags = [];
 
   final isEditProvider = StateProvider<bool>((ref) => false);
+  final isCategoryProvider = StateProvider<bool>((ref) => false);
   final isBoldProvider = StateProvider<bool>((ref) => false);
   final isItalicProvider = StateProvider<bool>((ref) => false);
   final isUnderlinedProvider = StateProvider<bool>((ref) => false);
@@ -45,13 +46,14 @@ class _AddNoteState extends ConsumerState<AddNote> {
   }
 
   void _updateFormatStates() {
-    final attrs = _contentController
-        .getSelectionStyle()
-        .attributes;
+    final attrs = _contentController.getSelectionStyle().attributes;
 
-    ref.read(isBoldProvider.notifier).state = attrs.keys.contains(Attribute.bold.key);
-    ref.read(isItalicProvider.notifier).state = attrs.keys.contains(Attribute.italic.key);
-    ref.read(isUnderlinedProvider.notifier).state = attrs.keys.contains(Attribute.underline.key);
+    ref.read(isBoldProvider.notifier).state =
+        attrs.keys.contains(Attribute.bold.key);
+    ref.read(isItalicProvider.notifier).state =
+        attrs.keys.contains(Attribute.italic.key);
+    ref.read(isUnderlinedProvider.notifier).state =
+        attrs.keys.contains(Attribute.underline.key);
   }
 
   @override
@@ -64,22 +66,23 @@ class _AddNoteState extends ConsumerState<AddNote> {
             MyHeader(
               title: "Add Note",
               onBackPressed: () {
-                _titleController.text.isNotEmpty ?
-                  MyPopup.show(
-                    context, title: "Yakin gamau lanjut?",
+                _titleController.text.isNotEmpty
+                  ? MyPopup.show(
+                    context,
+                    title: "Yakin gamau lanjut?",
                     agreeText: "Yakin",
                     disagreeText: "Batal",
-                    onAgreePressed: (){
+                    onAgreePressed: () {
                       Navigator.pushReplacement(
                         context,
                         MaterialPageRoute(builder: (_) => Dashboard()),
                       );
                     },
-                  ):
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(builder: (_) => Dashboard()),
-                );
+                  )
+                  : Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(builder: (_) => Dashboard()),
+                    );
               },
             ),
             Expanded(
@@ -94,9 +97,7 @@ class _AddNoteState extends ConsumerState<AddNote> {
                         controller: _titleController,
                         inputText: "Task name",
                         isTitle: true,
-                        onChanged: (value){
-
-                        },
+                        onChanged: (value) {},
                       ),
                       Container(
                         height: 250,
@@ -110,14 +111,16 @@ class _AddNoteState extends ConsumerState<AddNote> {
                             placeholder: 'Description Task',
                           ),
                         ),
-                      )
+                      ),
+                      _buildCategoryouriteButton(context),
                     ],
                   ),
                 ),
               ),
             ),
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
               child: Center(
                 child: _buildButton(context),
               ),
@@ -128,10 +131,92 @@ class _AddNoteState extends ConsumerState<AddNote> {
     );
   }
 
-  Widget _buildButton(BuildContext context){
+  Widget _buildCategoryouriteButton(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    final notifier = ref.read(noteNotifierProvider.notifier);
-    final size = SizeConfig;
+
+    final isActive = ref.watch(isCategoryProvider);
+
+    return Center(
+      child: AnimatedSwitcher(
+        duration: const Duration(milliseconds: 500),
+        transitionBuilder: (Widget child, Animation<double> animation) {
+          final slideIn = Tween<Offset>(
+            begin: const Offset(1.0, 0.0),
+            end: Offset.zero,
+          ).animate(
+            CurvedAnimation(
+              parent: animation,
+              curve: Curves.easeInOutCubic,
+            ),
+          );
+
+          return FadeTransition(
+            opacity: animation,
+            child: SlideTransition(
+              position: slideIn,
+              child: child,
+            ),
+          );
+        },
+        layoutBuilder: (Widget? currentChild, List<Widget> previousChildren) {
+          return Stack(
+            alignment: Alignment.center,
+            children: <Widget>[
+              ...previousChildren,
+              if (currentChild != null) currentChild,
+            ],
+          );
+        },
+        child: Row(
+          children: [
+            ElevatedButton(
+              style: ButtonStyle(
+                backgroundColor: WidgetStateProperty.all(cs.secondaryContainer),
+                elevation: WidgetStateProperty.all(2),
+                shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+                  RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8.0),
+                  ),
+                ),
+                padding: MaterialStateProperty.all<EdgeInsetsGeometry>(
+                  const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                ),
+              ),
+              child: Text(
+                "Category",
+                style: TextStyle(color: cs.onSecondaryContainer),
+              ),
+              onPressed: () {
+                final bool isNowEditing = ref
+                    .read(isCategoryProvider.notifier)
+                    .update((state) => !state);
+                if (!isNowEditing) {
+                  ref.read(isCategoryProvider.notifier).state = false;
+                }
+              },
+            ),
+            SizedBox(width: 8),
+            AnimatedSwitcher(
+              duration: const Duration(milliseconds: 300),
+              transitionBuilder: (Widget child, Animation<double> animation) {
+                return FadeTransition(opacity: animation, child: child);
+              },
+              child: isActive
+                  ? Text(
+                      "Well well well",
+                      style: TextStyle(color: cs.onBackground),
+                      key: const ValueKey<bool>(true),
+                    )
+                  : SizedBox.shrink(key: const ValueKey<bool>(false)),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildButton(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
 
     final isEdit = ref.watch(isEditProvider);
     final isBold = ref.watch(isBoldProvider);
@@ -175,14 +260,15 @@ class _AddNoteState extends ConsumerState<AddNote> {
           .containsKey(attribute.key);
 
       if (isActive) {
-        _contentController.formatSelection(Attribute(attribute.key, AttributeScope.inline, null));
+        _contentController.formatSelection(
+            Attribute(attribute.key, AttributeScope.inline, null));
       } else {
         _contentController.formatSelection(attribute);
       }
     }
 
-
-    Widget buildFormatButton(IconData icon, bool isActive, VoidCallback onPressed) {
+    Widget buildFormatButton(
+        IconData icon, bool isActive, VoidCallback onPressed) {
       return IconButton(
         onPressed: onPressed,
         icon: Icon(
@@ -190,7 +276,8 @@ class _AddNoteState extends ConsumerState<AddNote> {
           color: isActive ? cs.primary : cs.onSurface.withOpacity(0.6),
         ),
         style: IconButton.styleFrom(
-          backgroundColor: isActive ? cs.primary.withOpacity(0.1) : Colors.transparent,
+          backgroundColor:
+              isActive ? cs.primary.withOpacity(0.1) : Colors.transparent,
         ),
       );
     }
@@ -220,46 +307,51 @@ class _AddNoteState extends ConsumerState<AddNote> {
             );
           },
           child: isEdit
-              ?
-          Container(
-            key: const ValueKey('format-toolbar'),
-            padding: const EdgeInsets.all(2),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(26),
-              color: cs.onSurface.withOpacity(0.06),
-            ),
-            child: Row(
-              key: const ValueKey('button-row'),
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                buildFormatButton(
-                  Icons.format_bold,
-                  isBold,
-                      () => _toggleFormatAttribute(Attribute.bold, ),
+            ? Container(
+                key: const ValueKey('format-toolbar'),
+                padding: const EdgeInsets.all(2),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(26),
+                  color: cs.onSurface.withOpacity(0.06),
                 ),
-                buildFormatButton(
-                  Icons.format_italic,
-                  isItalic,
-                      () => _toggleFormatAttribute(Attribute.italic, ),
+                child: Row(
+                  key: const ValueKey('button-row'),
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    buildFormatButton(
+                      Icons.format_bold,
+                      isBold,
+                      () => _toggleFormatAttribute(
+                        Attribute.bold,
+                      ),
+                    ),
+                    buildFormatButton(
+                      Icons.format_italic,
+                      isItalic,
+                      () => _toggleFormatAttribute(
+                        Attribute.italic,
+                      ),
+                    ),
+                    buildFormatButton(
+                      Icons.format_underline,
+                      isUnderlined,
+                      () => _toggleFormatAttribute(
+                        Attribute.underline,
+                      ),
+                    ),
+                  ],
                 ),
-                buildFormatButton(
-                  Icons.format_underline,
-                  isUnderlined,
-                      () => _toggleFormatAttribute(Attribute.underline, ),
-                ),
-              ],
-            ),
-          )
-              :
-          const SizedBox(
-            key: ValueKey('empty-box'),
-          ),
+              )
+            : const SizedBox(
+                key: ValueKey('empty-box'),
+              ),
         ),
         IconButton(
           icon: Icon(Icons.edit, color: cs.onSurface),
           iconSize: 30,
           onPressed: () {
-            final bool isNowEditing = ref.read(isEditProvider.notifier).update((state) => !state);
+            final bool isNowEditing =
+                ref.read(isEditProvider.notifier).update((state) => !state);
 
             if (!isNowEditing) {
               ref.read(isBoldProvider.notifier).state = false;
