@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:to_do_list/pages/calendar.dart';
+import 'package:to_do_list/notifiers/user_notifier.dart';
+import 'package:to_do_list/pages/calendar/calendar.dart';
 import 'package:to_do_list/pages/focus/focus.dart';
-import 'package:to_do_list/pages/home.dart';
+import 'package:to_do_list/pages/home/home.dart';
+import 'package:to_do_list/pages/note/add_note.dart';
 import 'package:to_do_list/pages/setting.dart';
 import 'package:animated_bottom_navigation_bar/animated_bottom_navigation_bar.dart';
 
@@ -15,6 +17,12 @@ class Dashboard extends ConsumerStatefulWidget {
 
 class _DashboardState extends ConsumerState<Dashboard> {
   int _currIndex = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUser;
+  }
 
   final List<IconData> _iconList = [
     Icons.home,
@@ -29,10 +37,25 @@ class _DashboardState extends ConsumerState<Dashboard> {
     });
   }
 
+  Future<void> _loadUser() async {
+    final notifier = ref.read(userNotifierProvider.notifier);
+    await notifier.currentUser();
+  }
+
   @override
   Widget build(BuildContext context) {
+    final state    = ref.watch(userNotifierProvider);
+    final notifier = ref.read(userNotifierProvider.notifier);
+    final userState = state.user;
+
+    if (userState == null) {
+      return Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+
     final widgetOption = [
-      Home(),
+      Home(userData: userState,),
       Calendar(),
       FocusPage(),
       Setting()
@@ -40,13 +63,21 @@ class _DashboardState extends ConsumerState<Dashboard> {
 
     return Scaffold(
       body: widgetOption[_currIndex],
-      floatingActionButton: FloatingActionButton(
+      floatingActionButton: userState != null
+          ? FloatingActionButton(
         onPressed: () {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (_) => AddNote(userId: userState.id),
+            ),
+          );
         },
         backgroundColor: Theme.of(context).colorScheme.primary,
         shape: CircleBorder(),
         child: Icon(Icons.add),
-      ),
+      )
+          : null,
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       bottomNavigationBar: AnimatedBottomNavigationBar(
         icons: _iconList,

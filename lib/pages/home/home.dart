@@ -1,24 +1,28 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:to_do_list/component/button1.dart';
+import 'package:to_do_list/component/button2.dart';
 import 'package:to_do_list/component/card.dart';
 import 'package:to_do_list/component/size/size_config.dart';
 import 'package:to_do_list/component/text.dart';
 import 'package:to_do_list/models/index.dart';
 import 'package:to_do_list/notifiers/category_notifier.dart';
 import 'package:to_do_list/notifiers/note_notifier.dart';
+import 'package:to_do_list/pages/home/activity.dart';
 import 'package:to_do_list/pages/note/note.dart';
 import 'package:to_do_list/pages/profile_page.dart';
 
 class Home extends ConsumerStatefulWidget {
   final UserModel userData;
-  Home({super.key, required this.userData});
+  const Home({super.key, required this.userData});
 
   @override
   ConsumerState<Home> createState() => _HomeState();
 }
 
 class _HomeState extends ConsumerState<Home> {
+  final TextEditingController _categoryController = TextEditingController();
+
   final navTitleProvider = StateProvider<String>((ref) {
     return "All";
   });
@@ -30,11 +34,11 @@ class _HomeState extends ConsumerState<Home> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted && widget.userData.id.isNotEmpty) {
         ref
-            .read(categoryNotifierProvider.notifier)
-            .categoryByCreator(widget.userData.id);
+          .read(categoryNotifierProvider.notifier)
+          .categoryByCreator(widget.userData.id);
         ref
-            .read(noteNotifierProvider.notifier)
-            .noteByCreator(widget.userData.id);
+          .read(noteNotifierProvider.notifier)
+          .noteByCreator(widget.userData.id);
       }
     });
   }
@@ -55,29 +59,34 @@ class _HomeState extends ConsumerState<Home> {
     ref.read(loadingNavProvider.notifier).state = null;
   }
 
+  Future<void> _createCategory() async {
+    final notifier = ref.read(categoryNotifierProvider.notifier);
+    try{
+      final data = await notifier.addCategory(creatorId: widget.userData.id, title: _categoryController.text);
+      print("data sended $data");
+    } catch (e) {
+      print(e);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     SizeConfig.init(context);
 
     final noteState = ref.watch(noteNotifierProvider);
-    final noteNotifier = ref.read(noteNotifierProvider.notifier);
-
+    final catState = ref.watch(categoryNotifierProvider);
+    final navTitle = ref.watch(navTitleProvider);
+    final activeCategory = catState.categories
+      ?.firstWhere((cat) => cat.title == navTitle,
+      orElse: () => CategoryModel(
+        title: '',
+        noteId: [],
+        createdAt: DateTime.timestamp()
+      )
+    );
     final cs = Theme.of(context).colorScheme;
+
     return Scaffold(
-      // appBar: AppBar(
-      //   automaticallyImplyLeading: false,
-      //   centerTitle: true,
-      //   title: const Row(
-      //     mainAxisAlignment: MainAxisAlignment.center,
-      //     children: [
-      //       MyText(
-      //         "Home",
-      //         fontSize: 22,
-      //         fontWeight: FontWeight.w600,
-      //       ),
-      //     ],
-      //   ),
-      // ),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.only(left: 12.0, right: 12.0),
@@ -146,7 +155,13 @@ class _HomeState extends ConsumerState<Home> {
                 fontWeight: FontWeight.w600,
               ),
               const SizedBox(height: 10),
-              Expanded(child: _buildActivity(context))
+              Expanded(child: Activity(
+                userData: widget.userData,
+                navTitle: navTitle,
+                notes: noteState.notes,
+                category: activeCategory,
+                )
+              )
             ],
           ),
         ),
@@ -178,28 +193,30 @@ class _HomeState extends ConsumerState<Home> {
 
                 if (state.isLoading) {
                   return const Center(
-                      child: SizedBox(
-                          width: 20,
-                          height: 20,
-                          child: CircularProgressIndicator(strokeWidth: 2)));
+                    child: SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(strokeWidth: 2)
+                    )
+                  );
                 }
 
-                if (state.categoryourites == null ||
-                    state.categoryourites!.isEmpty) {
+                if (state.categories == null ||
+                    state.categories!.isEmpty) {
                   return const SizedBox.shrink();
                 }
 
                 return ListView.builder(
                   scrollDirection: Axis.horizontal,
-                  itemCount: state.categoryourites!.length,
+                  itemCount: state.categories!.length,
                   itemBuilder: (BuildContext context, int index) {
-                    final categoryourite = state.categoryourites![index];
+                    final category = state.categories![index];
                     final currentNavTitle = ref.watch(navTitleProvider);
                     return MyButton1(
-                      text: categoryourite.id,
-                      isTapped: currentNavTitle == categoryourite.id,
+                      text: category.title,
+                      isTapped: currentNavTitle == category.title,
                       onPressed: () {
-                        _handleNavChange(categoryourite.id);
+                        _handleNavChange(category.title);
                       },
                     );
                   },
@@ -209,7 +226,14 @@ class _HomeState extends ConsumerState<Home> {
           ),
           const SizedBox(width: 8),
           InkWell(
-            onTap: () {},
+            onTap: () {
+              showDialog(
+                context: context,
+                builder: (BuildContext context){
+                  return _buildAddCat(context);
+                }
+              );
+            },
             child: Container(
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
@@ -224,101 +248,50 @@ class _HomeState extends ConsumerState<Home> {
     );
   }
 
-  Widget _buildActivity(BuildContext context) {
-    final noteState = ref.watch(noteNotifierProvider);
-    final categoryState = ref.watch(categoryNotifierProvider);
-    final navTitle = ref.watch(navTitleProvider);
+  Widget _buildAddCat (BuildContext context){
+    final cs = Theme.of(context).colorScheme;
 
-    if (noteState.isLoading) {
-      return const Center(child: CircularProgressIndicator());
-    }
-
-    final allNotes = noteState.notes;
-    final categoryNoteIds = categoryState.categoryourite?.noteId;
-
-    if (allNotes == null || allNotes.isEmpty) {
-      return const Center(
-        child: MyText(
-          "Belum ada catatan",
-          fontSize: 16,
-          color: Colors.grey,
+    return AlertDialog(
+      content: Container(
+        width: 250,
+        height: 200,
+        decoration: BoxDecoration(
+          color: Colors.white.withOpacity(0.8),
         ),
-      );
-    }
-
-    final filteredNotes = (navTitle == "All")
-        ? allNotes
-        : allNotes
-            .where((note) => categoryNoteIds?.contains(note.id) ?? false)
-            .toList();
-
-    if (filteredNotes.isEmpty) {
-      return const Center(
-        child: MyText(
-          "Belum ada catatan untuk kategori ini",
-          fontSize: 16,
-          color: Colors.grey,
-        ),
-      );
-    }
-
-    return ListView.builder(
-      itemCount: filteredNotes.length,
-      padding: EdgeInsets.zero,
-      itemBuilder: (context, index) {
-        final note = filteredNotes[index];
-        return Padding(
-          padding: const EdgeInsets.symmetric(vertical: 8.0),
-          child: InkWell(
-            onTap: () {
-              if (widget.userData.id.isNotEmpty && note.id.isNotEmpty) {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => Note(
-                      creatorId: widget.userData.id,
-                      noteId: note.id,
-                    ),
+        child: Center(
+          child: Column(
+            children: [
+              Row(
+                children: [
+                  Text("Add your category"),
+                  Spacer(),
+                  IconButton(
+                    onPressed: (){
+                      Navigator.pop(context);
+                    },
+                    icon: Icon(Icons.cancel)
+                  )
+                ],
+              ),
+              SizedBox(height: 20,),
+              TextField(
+                controller: _categoryController,
+                style: TextStyle(
+                    fontSize: 20
                   ),
-                );
-              } else {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                      content: Text(
-                          "Cannot open note. Missing required information.")),
-                );
-              }
-            },
-            child: MyCard(
-              title: note.title,
-              subtitle: _scheduleStatus(note.schedule),
-            ),
-          ),
-        );
-      },
+                decoration: InputDecoration(
+                  labelText: "Kiriiik"
+                ),
+              ),
+              SizedBox(height: 30,),
+              MyButton1(
+                text: "Create",
+                onPressed: _createCategory
+              )
+            ],
+          )
+        ),
+      ),
     );
-  }
-
-  String _scheduleStatus(DateTime? schedule) {
-    if (schedule == null) {
-      return "Tidak ada jadwal";
-    }
-    final now = DateTime.now();
-    final today = DateTime(now.year, now.month, now.day);
-    final scheduledDay = DateTime(schedule.year, schedule.month, schedule.day);
-
-    final difference = scheduledDay.difference(today).inDays;
-
-    if (difference == 0) {
-      return "Hari ini";
-    } else if (difference == 1) {
-      return "Besok";
-    } else if (difference > 1) {
-      return "$difference hari lagi";
-    } else if (difference < 0) {
-      return "Sudah lewat";
-    } else {
-      return "Jadwal tidak valid";
-    }
   }
 }
