@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:to_do_list/component/button1.dart';
-import 'package:to_do_list/component/button2.dart';
 import 'package:to_do_list/component/card.dart';
 import 'package:to_do_list/component/size/size_config.dart';
 import 'package:to_do_list/component/text.dart';
@@ -9,8 +8,11 @@ import 'package:to_do_list/models/index.dart';
 import 'package:to_do_list/notifiers/category_notifier.dart';
 import 'package:to_do_list/notifiers/note_notifier.dart';
 import 'package:to_do_list/pages/home/activity.dart';
-import 'package:to_do_list/pages/note/note.dart';
 import 'package:to_do_list/pages/profile_page.dart';
+
+final navLoadingProvider = StateProvider<bool>((ref) => false);
+final navTitleProvider = StateProvider<String>((ref) => "All");
+final loadingNavProvider = StateProvider<String?>((ref) => null);
 
 class Home extends ConsumerStatefulWidget {
   final UserModel userData;
@@ -23,20 +25,15 @@ class Home extends ConsumerStatefulWidget {
 class _HomeState extends ConsumerState<Home> {
   final TextEditingController _categoryController = TextEditingController();
 
-  final navTitleProvider = StateProvider<String>((ref) {
-    return "All";
-  });
-  final loadingNavProvider = StateProvider<String?>((ref) => null);
-
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
       if (mounted && widget.userData.id.isNotEmpty) {
         ref
           .read(categoryNotifierProvider.notifier)
           .categoryByCreator(widget.userData.id);
-        ref
+        await ref
           .read(noteNotifierProvider.notifier)
           .noteByCreator(widget.userData.id);
       }
@@ -52,8 +49,8 @@ class _HomeState extends ConsumerState<Home> {
 
     if (newTitle == "All") {
       await ref
-          .read(noteNotifierProvider.notifier)
-          .noteByCreator(widget.userData.id);
+        .read(noteNotifierProvider.notifier)
+        .noteByCreator(widget.userData.id);
     } else {}
 
     ref.read(loadingNavProvider.notifier).state = null;
@@ -72,10 +69,11 @@ class _HomeState extends ConsumerState<Home> {
   @override
   Widget build(BuildContext context) {
     SizeConfig.init(context);
-
+    final isNavLoading = ref.watch(navLoadingProvider);
     final noteState = ref.watch(noteNotifierProvider);
     final catState = ref.watch(categoryNotifierProvider);
     final navTitle = ref.watch(navTitleProvider);
+
     final activeCategory = catState.categories
       ?.firstWhere((cat) => cat.title == navTitle,
       orElse: () => CategoryModel(
@@ -87,7 +85,15 @@ class _HomeState extends ConsumerState<Home> {
     final cs = Theme.of(context).colorScheme;
 
     return Scaffold(
-      body: SafeArea(
+      body: isNavLoading == false && noteState.isLoading ?
+      const Center(
+          child: SizedBox(
+              width: 20,
+              height: 20,
+              child: CircularProgressIndicator(strokeWidth: 2)
+          )
+      ) :
+      SafeArea(
         child: Padding(
           padding: const EdgeInsets.only(left: 12.0, right: 12.0),
           child: Column(
@@ -123,7 +129,9 @@ class _HomeState extends ConsumerState<Home> {
                           context,
                           MaterialPageRoute(
                             builder: (_) =>
-                                ProfilePage(userData: widget.userData),
+                              ProfilePage(
+                                userData: widget.userData,
+                              ),
                           ),
                         );
                       },
@@ -131,10 +139,10 @@ class _HomeState extends ConsumerState<Home> {
                         radius: 30,
                         backgroundColor: cs.primary.withOpacity(0.4),
                         backgroundImage: widget.userData.image != null &&
-                                widget.userData.image!.isNotEmpty
+                            widget.userData.image!.isNotEmpty
                             ? NetworkImage(widget.userData.image!)
                             : const AssetImage("assets/bayu.jpg")
-                                as ImageProvider,
+                        as ImageProvider,
                         onBackgroundImageError: (_, __) {},
                       ),
                     ),
@@ -160,7 +168,7 @@ class _HomeState extends ConsumerState<Home> {
                 navTitle: navTitle,
                 notes: noteState.notes,
                 category: activeCategory,
-                )
+              )
               )
             ],
           ),
@@ -191,15 +199,11 @@ class _HomeState extends ConsumerState<Home> {
               builder: (context, ref, child) {
                 final state = ref.watch(categoryNotifierProvider);
 
-                if (state.isLoading) {
-                  return const Center(
-                    child: SizedBox(
-                      width: 20,
-                      height: 20,
-                      child: CircularProgressIndicator(strokeWidth: 2)
-                    )
-                  );
-                }
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  if (mounted) {
+                    ref.read(navLoadingProvider.notifier).state = state.isLoading;
+                  }
+                });
 
                 if (state.categories == null ||
                     state.categories!.isEmpty) {
@@ -228,10 +232,10 @@ class _HomeState extends ConsumerState<Home> {
           InkWell(
             onTap: () {
               showDialog(
-                context: context,
-                builder: (BuildContext context){
-                  return _buildAddCat(context);
-                }
+                  context: context,
+                  builder: (BuildContext context){
+                    return _buildAddCat(context);
+                  }
               );
             },
             child: Container(
@@ -277,8 +281,8 @@ class _HomeState extends ConsumerState<Home> {
               TextField(
                 controller: _categoryController,
                 style: TextStyle(
-                    fontSize: 20
-                  ),
+                  fontSize: 20
+                ),
                 decoration: InputDecoration(
                   labelText: "Kiriiik"
                 ),
