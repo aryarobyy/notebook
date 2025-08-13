@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:to_do_list/component/button1.dart';
-import 'package:to_do_list/component/card.dart';
+import 'package:to_do_list/component/note_card.dart';
 import 'package:to_do_list/component/size/size_config.dart';
 import 'package:to_do_list/component/text.dart';
 import 'package:to_do_list/models/index.dart';
 import 'package:to_do_list/notifiers/category_notifier.dart';
 import 'package:to_do_list/notifiers/note_notifier.dart';
 import 'package:to_do_list/pages/home/activity.dart';
+import 'package:to_do_list/pages/home/category_setting.dart';
 import 'package:to_do_list/pages/profile_page.dart';
 
 final navLoadingProvider = StateProvider<bool>((ref) => false);
@@ -150,7 +151,7 @@ class _HomeState extends ConsumerState<Home> {
                 ],
               ),
               const SizedBox(height: 20),
-              const MyCard(
+              const NoteCard(
                 title: "Bayu Nikah",
                 subtitle: "Besok",
               ),
@@ -180,6 +181,18 @@ class _HomeState extends ConsumerState<Home> {
   Widget _buildNav(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     final navTitle = ref.watch(navTitleProvider);
+    final state = ref.watch(categoryNotifierProvider);
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        ref.read(navLoadingProvider.notifier).state = state.isLoading;
+      }
+    });
+
+    if (state.categories == null ||
+        state.categories!.isEmpty) {
+      return const SizedBox.shrink();
+    }
 
     return SizedBox(
       height: 40,
@@ -197,19 +210,6 @@ class _HomeState extends ConsumerState<Home> {
           Expanded(
             child: Consumer(
               builder: (context, ref, child) {
-                final state = ref.watch(categoryNotifierProvider);
-
-                WidgetsBinding.instance.addPostFrameCallback((_) {
-                  if (mounted) {
-                    ref.read(navLoadingProvider.notifier).state = state.isLoading;
-                  }
-                });
-
-                if (state.categories == null ||
-                    state.categories!.isEmpty) {
-                  return const SizedBox.shrink();
-                }
-
                 return ListView.builder(
                   scrollDirection: Axis.horizontal,
                   itemCount: state.categories!.length,
@@ -231,12 +231,25 @@ class _HomeState extends ConsumerState<Home> {
           const SizedBox(width: 8),
           InkWell(
             onTap: () {
-              showDialog(
-                  context: context,
-                  builder: (BuildContext context){
-                    return _buildAddCat(context);
-                  }
-              );
+              print(state.categories);
+              // showDialog(
+              //   context: context,
+              //   builder: (BuildContext context){
+              //     return _buildAddCat(context);
+              //   }
+              // );
+              if (state.categories != null) {
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => CategorySetting(categories: state.categories, userData: widget.userData,)
+                  )
+                );
+              } else {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Category tidak ditemukan')),
+                );
+              }
             },
             child: Container(
               padding: const EdgeInsets.all(10),
@@ -244,7 +257,7 @@ class _HomeState extends ConsumerState<Home> {
                 borderRadius: BorderRadius.circular(25),
                 color: cs.surface,
               ),
-              child: Icon(Icons.add, color: cs.onSurface, size: 20),
+              child: Icon(Icons.settings, color: cs.onSurface, size: 20),
             ),
           ),
         ],

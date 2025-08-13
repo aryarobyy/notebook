@@ -15,8 +15,8 @@ class _LoginState extends ConsumerState<Login> {
   Widget build(BuildContext context) {
     final state    = ref.watch(userNotifierProvider);
     final notifier = ref.read(userNotifierProvider.notifier);
-
     final size = MediaQuery.of(context).size;
+    final cs = Theme.of(context).colorScheme;
 
     void _handleLogin() async {
       if(state.isLoading) return;
@@ -36,7 +36,9 @@ class _LoginState extends ConsumerState<Login> {
     }
 
     return Scaffold(
-      body:Center(
+      body: state.isLoading
+        ? Loading()
+        : Center(
         child: SingleChildScrollView(
           child: Padding(
             padding: EdgeInsets.symmetric(
@@ -147,18 +149,14 @@ class _LoginState extends ConsumerState<Login> {
                         ),
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(20),
-                          color: state.isLoading ? Colors.grey : Theme.of(context).colorScheme.secondary,
+                          color: state.isLoading ? Colors.grey : cs.secondary,
                         ),
                         child: Center(
-                          child: state.isLoading
-                              ? CircularProgressIndicator(
-                            color: Theme.of(context).colorScheme.primary,
-                          )
-                              : Text(
+                          child: Text(
                             "Masuk",
                             style: TextStyle(
                               fontSize: size.width * 0.04,
-                              color: Theme.of(context).colorScheme.background,
+                              color: cs.background,
                             ),
                           ),
                         ),

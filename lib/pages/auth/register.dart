@@ -45,7 +45,9 @@ class _RegisterState extends ConsumerState<Register> {
     };
 
     return Scaffold(
-      body: Center(
+      body:  state.isLoading
+        ? Loading()
+        :  Center(
         child: SingleChildScrollView(
           child: Padding(
             padding: EdgeInsets.symmetric(
@@ -169,11 +171,7 @@ class _RegisterState extends ConsumerState<Register> {
                           color: state.isLoading ? Colors.grey : Theme.of(context).colorScheme.secondary,
                         ),
                         child: Center(
-                          child: state.isLoading
-                              ? CircularProgressIndicator(
-                            color: Theme.of(context).colorScheme.primary,
-                          )
-                              : Text(
+                          child: Text(
                             "Daftar",
                             style: TextStyle(
                               fontSize: size.width * 0.04,

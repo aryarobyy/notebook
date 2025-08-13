@@ -13,13 +13,14 @@ class MyHeader extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final cs = Theme.of(context).colorScheme;
 
     return SizedBox(
       height: 66,
       child: Row(
         children: [
           IconButton(
-            icon: const Icon(Icons.arrow_back, color: Colors.white),
+            icon: Icon(Icons.arrow_back, color: cs.onSurface),
             onPressed: onBackPressed ?? () => Navigator.of(context).pop(),
           ),
 
@@ -27,8 +28,8 @@ class MyHeader extends ConsumerWidget {
             child: Center(
               child: Text(
                 title,
-                style: const TextStyle(
-                  color: Colors.white,
+                style: TextStyle(
+                  color: cs.onSurface,
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
                 ),

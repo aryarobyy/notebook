@@ -8,6 +8,7 @@ import 'package:to_do_list/provider/user_provider.dart';
 
 final userServiceProvider = Provider((ref) => UserProvider());
 final secureStorageProvider = Provider((ref) => FlutterSecureStorage());
+FlutterSecureStorage _storage = FlutterSecureStorage();
 
 @immutable
 class UserState {
@@ -45,6 +46,7 @@ class UserNotifier extends StateNotifier<UserState> {
     try {
       await _provider.login(email: email, password: password);
       await currentUser();
+      state = state.copyWith(isLoading: false, error: null);
     } catch (e) {
       state = state.copyWith(error: e.toString(), isLoading: false);
     }
@@ -59,6 +61,7 @@ class UserNotifier extends StateNotifier<UserState> {
         password: password,
       );
       // await login(email, password, ref);
+      state = state.copyWith(isLoading: false, error: null);
     } catch (e) {
       state = state.copyWith(error: e.toString(), isLoading: false);
     }
@@ -68,10 +71,20 @@ class UserNotifier extends StateNotifier<UserState> {
     state = state.copyWith(isLoading: true, error: null);
 
     try {
+      final tokenValid = await verifToken();
+
+      if (!tokenValid) {
+        print('Token tidak valid');
+        state = state.copyWith(isLoading: false, user: null, error: null);
+        return;
+      }
+
+      print('Token valid, mengambil userData...');
       final userDataString = await _storage.read(key: 'userData');
 
       if (userDataString == null || userDataString.isEmpty) {
-        state = state.copyWith(isLoading: false, user: null);
+        print('UserData tidak ditemukan');
+        state = state.copyWith(isLoading: false, user: null, error: null);
         return;
       }
 
@@ -99,13 +112,41 @@ class UserNotifier extends StateNotifier<UserState> {
         return;
       }
 
-      state = state.copyWith(user: user, isLoading: false);
+      print('Cek CurrentUser berhasil, user: ${user.toString()}');
+      state = state.copyWith(user: user, isLoading: false, error: null);
+
     } catch (e, stackTrace) {
       print('currentUser - Error umum di luar dugaan: $e\n$stackTrace');
       state = state.copyWith(user: null, error: e.toString(), isLoading: false);
       await logout();
     }
   }
+
+  Future<bool> verifToken() async {
+    try {
+      final token = await _storage.read(key: 'token');
+      print('Token: $token');
+
+      if (token == null || token.isEmpty) {
+        print('Token tidak ditemukan');
+        return false;
+      }
+
+      final bool isUserValid = await _provider.verifyToken(token);
+
+      if (!isUserValid) {
+        print('Token tidak valid, menghapus dari storage');
+        await _storage.delete(key: 'token');
+        return false;
+      }
+
+      return true;
+    } catch (e, stackTrace) {
+      print('Error during verify token: $e\n$stackTrace');
+      return false;
+    }
+  }
+
 
   Future<UserModel> update({
     required String userId,

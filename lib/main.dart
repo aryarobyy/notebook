@@ -5,6 +5,8 @@ import 'package:to_do_list/component/theme/dark_theme.dart';
 import 'package:to_do_list/component/theme/light_theme.dart';
 import 'package:to_do_list/component/theme/theme_provider.dart';
 import 'package:to_do_list/pages/auth/auth.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:flutter_quill/flutter_quill.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -26,6 +28,17 @@ class MyApp extends ConsumerWidget {
         darkTheme: darkTheme,
         themeMode: themeMode,
         home: Auth(),
+
+        localizationsDelegates: const [
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+          FlutterQuillLocalizations.delegate,
+        ],
+        supportedLocales: const [
+          Locale('en', 'US'),
+          Locale('id', 'ID'),
+        ],
       ),
     );
   }

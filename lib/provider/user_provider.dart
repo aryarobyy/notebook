@@ -134,7 +134,9 @@ class UserProvider {
 
       if (response.statusCode == 200) {
         final Map<String, dynamic> data = jsonDecode(response.body);
-        await _storage.write(key: 'token', value: data['token']);
+        final String token = data['token'];
+        await _storage.write(key: 'token', value: token);
+
         final userData = data['data'];
         final Map<String, dynamic> userMap = userData['data'];
         await _storage.write(key: 'userData', value: jsonEncode(userMap));
@@ -228,7 +230,7 @@ class UserProvider {
         return true;
       } else {
         final errorData = jsonDecode(response.body);
-        print('Token verification failed: ${errorData['message']}');
+        print('Token verification failed: ${errorData['error']}');
         return false;
       }
     } catch (e, stackTrace) {
