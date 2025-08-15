@@ -2,7 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:to_do_list/component/button1.dart';
-import 'package:to_do_list/component/card.dart';
+import 'package:to_do_list/component/note_card.dart';
 import 'package:to_do_list/component/text.dart';
 import 'package:to_do_list/models/index.dart';
 import 'package:to_do_list/notifiers/category_notifier.dart';
@@ -46,8 +46,6 @@ class _ActivityState extends ConsumerState<Activity> {
 
     final allNotes = widget.notes;
     final categoryNoteIds = widget.category?.noteId;
-    print( widget.category);
-    print("AKSALAS $categoryNoteIds");
 
     if (allNotes == null || allNotes.isEmpty) {
       return const Center(
@@ -102,32 +100,22 @@ class _ActivityState extends ConsumerState<Activity> {
         final note = filteredNotes[index];
         return Padding(
           padding: const EdgeInsets.symmetric(vertical: 8.0),
-          child: InkWell(
-            onTap: () {
-              if (widget.userData.id.isNotEmpty && note.id.isNotEmpty) {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => Note(
-                      creatorId: widget.userData.id,
-                      noteId: note.id,
-                    ),
+          child: NoteCard(
+            title: note.title,
+            subtitle: _scheduleStatus(note.schedule),
+            onTap: (widget.userData.id.isNotEmpty && note.id.isNotEmpty)
+                ? () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => Note(
+                    creatorId: widget.userData.id,
+                    noteId: note.id,
                   ),
-                );
-              } else {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text(
-                      "Cannot open note. Missing required information."
-                    )
-                  ),
-                );
-              }
-            },
-            child: MyCard(
-              title: note.title,
-              subtitle: _scheduleStatus(note.schedule),
-            ),
+                ),
+              );
+            }
+                : null,
           ),
         );
       },

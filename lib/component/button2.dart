@@ -24,13 +24,11 @@ class MyButton2 extends ConsumerStatefulWidget {
   final IconData? icon;
   final double width;
   final double height;
-  final String buttonId;
 
   const MyButton2({
     Key? key,
     required this.text,
     required this.onPressed,
-    required this.buttonId,
     this.icon,
     this.width = 200.0,
     this.height = 50.0,

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:to_do_list/component/text.dart';
 
-class MyCard extends StatelessWidget {
+class NoteCard extends StatelessWidget {
   final String title;
   final String subtitle;
   final double width;
@@ -9,7 +9,7 @@ class MyCard extends StatelessWidget {
   final Color? color;
   final VoidCallback? onTap; // ✅ opsional
 
-  const MyCard({
+  const NoteCard({
     Key? key,
     required this.title,
     required this.subtitle,
