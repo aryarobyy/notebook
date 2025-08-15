@@ -4,13 +4,23 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_quill/flutter_quill.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:to_do_list/component/nav_button.dart';
 import 'package:to_do_list/component/note_text_field.dart';
 import 'package:to_do_list/component/size/size_config.dart';
 import 'package:to_do_list/component/widget/header.dart';
 import 'package:to_do_list/component/widget/popup.dart';
+import 'package:to_do_list/notifiers/category_notifier.dart';
 import 'package:to_do_list/notifiers/note_notifier.dart';
 import 'package:to_do_list/pages/dashboard.dart';
 import 'package:to_do_list/pages/note/note.dart';
+
+final isEditProvider = StateProvider<bool>((ref) => false);
+final isCategoryProvider = StateProvider<bool>((ref) => false);
+final isBoldProvider = StateProvider<bool>((ref) => false);
+final isItalicProvider = StateProvider<bool>((ref) => false);
+final isUnderlinedProvider = StateProvider<bool>((ref) => false);
+final circleButtonSelectedProvider = StateProvider<bool>((ref) => false);
+final categoryProvider = StateProvider<String>((ref) => '');
 
 class AddNote extends ConsumerStatefulWidget {
   final String userId;
@@ -23,19 +33,18 @@ class AddNote extends ConsumerStatefulWidget {
 class _AddNoteState extends ConsumerState<AddNote> {
   final TextEditingController _titleController = TextEditingController();
   final QuillController _contentController = QuillController.basic();
-  final List<String> _tags = [];
-
-  final isEditProvider = StateProvider<bool>((ref) => false);
-  final isCategoryProvider = StateProvider<bool>((ref) => false);
-  final isBoldProvider = StateProvider<bool>((ref) => false);
-  final isItalicProvider = StateProvider<bool>((ref) => false);
-  final isUnderlinedProvider = StateProvider<bool>((ref) => false);
-  final circleButtonSelectedProvider = StateProvider<bool>((ref) => false);
 
   @override
   void initState() {
     super.initState();
     _contentController.addListener(_updateFormatStates);
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if(mounted && widget.userId.isNotEmpty){
+        ref
+          .read(categoryNotifierProvider.notifier)
+          .categoryByCreator(widget.userId);
+      }
+    });
   }
 
   @override
@@ -47,7 +56,6 @@ class _AddNoteState extends ConsumerState<AddNote> {
 
   void _updateFormatStates() {
     final attrs = _contentController.getSelectionStyle().attributes;
-
     ref.read(isBoldProvider.notifier).state =
         attrs.keys.contains(Attribute.bold.key);
     ref.read(isItalicProvider.notifier).state =
@@ -112,7 +120,7 @@ class _AddNoteState extends ConsumerState<AddNote> {
                           ),
                         ),
                       ),
-                      _buildCategoryouriteButton(context),
+                      _buildCategoryButton(context),
                     ],
                   ),
                 ),
@@ -131,10 +139,12 @@ class _AddNoteState extends ConsumerState<AddNote> {
     );
   }
 
-  Widget _buildCategoryouriteButton(BuildContext context) {
+  Widget _buildCategoryButton(BuildContext context) {
+    final state = ref.watch(categoryNotifierProvider);
     final cs = Theme.of(context).colorScheme;
-
     final isActive = ref.watch(isCategoryProvider);
+    final category = state.categories;
+    final selectedCategory = ref.watch(categoryProvider);
 
     return Center(
       child: AnimatedSwitcher(
@@ -170,44 +180,57 @@ class _AddNoteState extends ConsumerState<AddNote> {
         child: Row(
           children: [
             ElevatedButton(
-              style: ButtonStyle(
-                backgroundColor: WidgetStateProperty.all(cs.secondaryContainer),
-                elevation: WidgetStateProperty.all(2),
-                shape: MaterialStateProperty.all<RoundedRectangleBorder>(
-                  RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8.0),
-                  ),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: cs.secondary,
+                foregroundColor: cs.onPrimary,
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(50),
                 ),
-                padding: MaterialStateProperty.all<EdgeInsetsGeometry>(
-                  const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                ),
-              ),
-              child: Text(
-                "Category",
-                style: TextStyle(color: cs.onSecondaryContainer),
+                elevation: 4,
               ),
               onPressed: () {
-                final bool isNowEditing = ref
-                    .read(isCategoryProvider.notifier)
-                    .update((state) => !state);
-                if (!isNowEditing) {
-                  ref.read(isCategoryProvider.notifier).state = false;
-                }
+                ref.read(isCategoryProvider.notifier).update((state) => !state);
               },
+              child: const Text("Category"),
             ),
-            SizedBox(width: 8),
+            const SizedBox(width: 8),
             AnimatedSwitcher(
               duration: const Duration(milliseconds: 300),
-              transitionBuilder: (Widget child, Animation<double> animation) {
-                return FadeTransition(opacity: animation, child: child);
-              },
+              transitionBuilder: (child, animation) =>
+                  FadeTransition(opacity: animation, child: child),
               child: isActive
-                  ? Text(
-                      "Well well well",
-                      style: TextStyle(color: cs.onBackground),
-                      key: const ValueKey<bool>(true),
-                    )
-                  : SizedBox.shrink(key: const ValueKey<bool>(false)),
+                  ? Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: category!.map((e) {
+                  final bool isSelected = e.title == selectedCategory;
+                  return ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: isSelected
+                          ? cs.primary
+                          : cs.secondaryContainer,
+                      foregroundColor: isSelected
+                          ? cs.onPrimary
+                          : cs.onSecondaryContainer,
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8.0),
+                      ),
+                      elevation: isSelected ? 4 : 2,
+                    ),
+                    onPressed: () {
+                      if (selectedCategory == e.title) {
+                        ref.read(categoryProvider.notifier).state = '';
+                      } else {
+                        ref.read(categoryProvider.notifier).state = e.title;
+                      }
+                    },
+                    child: Text(e.title),
+                  );
+                }).toList(),
+              ) : const SizedBox.shrink(key: ValueKey(false)),
             ),
           ],
         ),
@@ -222,6 +245,7 @@ class _AddNoteState extends ConsumerState<AddNote> {
     final isBold = ref.watch(isBoldProvider);
     final isItalic = ref.watch(isItalicProvider);
     final isUnderlined = ref.watch(isUnderlinedProvider);
+    final selectedCategory = ref.watch(categoryProvider);
 
     void _postNote() async {
       if (_titleController.text.isEmpty) {
@@ -237,12 +261,22 @@ class _AddNoteState extends ConsumerState<AddNote> {
       final delta = _contentController.document.toDelta();
       final contentAsJsonString = jsonEncode(delta.toJson());
 
-      final notifier = ref.read(noteNotifierProvider.notifier);
-      final note = await notifier.addNote(
+      final noteNotifier = ref.read(noteNotifierProvider.notifier);
+      final catNotifier = ref.read(categoryNotifierProvider.notifier);
+
+      final note = await noteNotifier.addNote(
         widget.userId,
         _titleController.text.trim(),
         contentAsJsonString,
       );
+
+      if(selectedCategory.isNotEmpty){
+        await catNotifier.addCategory(creatorId: widget.userId, title: selectedCategory);
+      }
+
+      _titleController.clear();
+      _contentController.clear();
+      selectedCategory == '';
 
       MyPopup.show(context, title: "Catatan berhasil dibuat");
       Navigator.pushReplacement(
