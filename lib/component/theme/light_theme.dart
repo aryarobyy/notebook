@@ -14,6 +14,8 @@ final ThemeData lightTheme = ThemeData(
         onSurface: Color(0xFF3A3A3A),
         error: Colors.red,
         onError: Colors.white,
+        secondaryContainer: Color(0xFFE9DDFF),
+        onSecondaryContainer: Color(0xFF4A2E7E),
     ),
     scaffoldBackgroundColor: const Color(0xFFFFFFFF),
     floatingActionButtonTheme: const FloatingActionButtonThemeData(
