@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:to_do_list/component/button1.dart';
+import 'package:to_do_list/component/categories_card.dart';
 import 'package:to_do_list/component/note_card.dart';
 import 'package:to_do_list/component/size/size_config.dart';
 import 'package:to_do_list/component/text.dart';
 import 'package:to_do_list/models/index.dart';
+import 'package:to_do_list/note_list.dart';
 import 'package:to_do_list/notifiers/category_notifier.dart';
 import 'package:to_do_list/notifiers/note_notifier.dart';
 import 'package:to_do_list/pages/home/activity.dart';
@@ -74,15 +76,6 @@ class _HomeState extends ConsumerState<Home> {
     final noteState = ref.watch(noteNotifierProvider);
     final catState = ref.watch(categoryNotifierProvider);
     final navTitle = ref.watch(navTitleProvider);
-
-    final activeCategory = catState.categories
-      ?.firstWhere((cat) => cat.title == navTitle,
-      orElse: () => CategoryModel(
-        title: '',
-        noteId: [],
-        createdAt: DateTime.timestamp()
-      )
-    );
     final cs = Theme.of(context).colorScheme;
 
     return Scaffold(
@@ -164,12 +157,13 @@ class _HomeState extends ConsumerState<Home> {
                 fontWeight: FontWeight.w600,
               ),
               const SizedBox(height: 10),
-              Expanded(child: Activity(
-                userData: widget.userData,
-                navTitle: navTitle,
-                notes: noteState.notes,
-                category: activeCategory,
-              )
+              Expanded(
+                child: Activity(
+                  userData: widget.userData,
+                  navTitle: navTitle,
+                  notes: noteState.notes,
+                  category: catState.category
+                ),
               )
             ],
           ),

@@ -8,6 +8,7 @@ import 'package:to_do_list/models/index.dart';
 import 'package:to_do_list/notifiers/category_notifier.dart';
 import 'package:to_do_list/notifiers/note_notifier.dart';
 import 'package:to_do_list/pages/dashboard.dart';
+import 'package:to_do_list/pages/home/activity.dart';
 import 'package:to_do_list/pages/home/home.dart';
 import 'package:to_do_list/pages/note/note.dart';
 
@@ -154,9 +155,10 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
   }
 
   Widget _buildCategories(BuildContext context, WidgetRef ref) {
-    final state = ref.watch(categoryNotifierProvider);
+    final catState = ref.watch(categoryNotifierProvider);
+    final noteState = ref.watch(noteNotifierProvider);
 
-    if (state.categories == null || state.categories!.isEmpty) {
+    if (catState.categories == null || catState.categories!.isEmpty) {
       return const Padding(
         padding: EdgeInsets.symmetric(horizontal: 30),
         child: Text("No categories"),
@@ -167,14 +169,11 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
       child: ListView.builder(
         shrinkWrap: true,
         padding: const EdgeInsets.symmetric(horizontal: 12),
-        itemCount: state.categories!.length,
+        itemCount: catState.categories!.length,
         itemBuilder: (BuildContext context, int index) {
-          final category = state.categories![index];
+          final category = catState.categories![index];
 
-          return CategoriesCard(
-            userData: widget.userData,
-            category: category,
-          );
+          return CategoriesCard(userData: widget.userData, category: category);
         },
       ),
     );

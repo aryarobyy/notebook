@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:to_do_list/component/note_card.dart';
 import 'package:to_do_list/component/text.dart';
 import 'package:to_do_list/models/index.dart';
 import 'package:to_do_list/notifiers/category_notifier.dart';
@@ -107,12 +108,9 @@ class CategoriesCard extends ConsumerWidget {
       for (var noteId in items) {
         try {
           final note = await noteNotifier.noteById(userData.id, noteId);
-          if (note != null) {
-            notesData.add(note);
-          }
+          notesData.add(note);
         } catch (e) {
           print('Error fetching note $noteId: $e');
-          // Continue with other notes
         }
       }
     }
@@ -139,10 +137,12 @@ class CategoriesCard extends ConsumerWidget {
                 itemCount: notesData.length,
                 itemBuilder: (context, index) {
                   final note = notesData[index];
-                  return ListTile(
-                    leading: const Icon(Icons.note),
-                    title: Text(note.title),
-                    subtitle: Text(note.content ?? ''),
+                  return Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: NoteCard(
+                      title: note.title,
+                      subtitle: _scheduleStatus(note.schedule),
+                    ),
                   );
                 },
               ),
@@ -156,6 +156,29 @@ class CategoriesCard extends ConsumerWidget {
           );
         },
       );
+    }
+  }
+
+  String _scheduleStatus(DateTime? schedule) {
+    if (schedule == null) {
+      return "Tidak ada jadwal";
+    }
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final scheduledDay = DateTime(schedule.year, schedule.month, schedule.day);
+
+    final difference = scheduledDay.difference(today).inDays;
+
+    if (difference == 0) {
+      return "Hari ini";
+    } else if (difference == 1) {
+      return "Besok";
+    } else if (difference > 1) {
+      return "$difference hari lagi";
+    } else if (difference < 0) {
+      return "Sudah lewat";
+    } else {
+      return "Jadwal tidak valid";
     }
   }
 }

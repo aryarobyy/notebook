@@ -271,7 +271,8 @@ class _AddNoteState extends ConsumerState<AddNote> {
       );
 
       if(selectedCategory.isNotEmpty){
-        await catNotifier.addCategory(creatorId: widget.userId, title: selectedCategory);
+        final data = await catNotifier.update(creatorId: widget.userId, title: selectedCategory, removeNoteId: [], addNoteId: [note.id]);
+        print("data $data");
       }
 
       _titleController.clear();
@@ -342,40 +343,40 @@ class _AddNoteState extends ConsumerState<AddNote> {
           },
           child: isEdit
             ? Container(
-                key: const ValueKey('format-toolbar'),
-                padding: const EdgeInsets.all(2),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(26),
-                  color: cs.onSurface.withOpacity(0.06),
-                ),
-                child: Row(
-                  key: const ValueKey('button-row'),
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    buildFormatButton(
-                      Icons.format_bold,
-                      isBold,
-                      () => _toggleFormatAttribute(
-                        Attribute.bold,
-                      ),
+              key: const ValueKey('format-toolbar'),
+              padding: const EdgeInsets.all(2),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(26),
+                color: cs.onSurface.withOpacity(0.06),
+              ),
+              child: Row(
+                key: const ValueKey('button-row'),
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  buildFormatButton(
+                    Icons.format_bold,
+                    isBold,
+                    () => _toggleFormatAttribute(
+                      Attribute.bold,
                     ),
-                    buildFormatButton(
-                      Icons.format_italic,
-                      isItalic,
-                      () => _toggleFormatAttribute(
-                        Attribute.italic,
-                      ),
+                  ),
+                  buildFormatButton(
+                    Icons.format_italic,
+                    isItalic,
+                    () => _toggleFormatAttribute(
+                      Attribute.italic,
                     ),
-                    buildFormatButton(
-                      Icons.format_underline,
-                      isUnderlined,
-                      () => _toggleFormatAttribute(
-                        Attribute.underline,
-                      ),
+                  ),
+                  buildFormatButton(
+                    Icons.format_underline,
+                    isUnderlined,
+                    () => _toggleFormatAttribute(
+                      Attribute.underline,
                     ),
-                  ],
-                ),
-              )
+                  ),
+                ],
+              ),
+            )
             : const SizedBox(
                 key: ValueKey('empty-box'),
               ),

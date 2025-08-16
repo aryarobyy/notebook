@@ -79,10 +79,7 @@ class _CategorySettingState extends ConsumerState<CategorySetting> {
         itemBuilder: (BuildContext context, int index) {
           final category = state.categories![index];
 
-          return CategoriesCard(
-            userData: widget.userData,
-            category: category,
-          );
+          return CategoriesCard(userData: widget.userData, category: category);
         },
       ),
     );
