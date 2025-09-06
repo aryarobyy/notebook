@@ -1,4 +1,3 @@
-// pomodoro_widget.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:to_do_list/pages/focus/pomodoro_controller.dart';

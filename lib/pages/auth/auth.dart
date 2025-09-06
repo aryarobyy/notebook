@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:to_do_list/component/text_field.dart';
-import 'package:to_do_list/component/widget/loading.dart';
-import 'package:to_do_list/component/widget/popup.dart';
+import 'package:to_do_list/component/widget/field/text_field.dart';
+import 'package:to_do_list/component/util/loading.dart';
+import 'package:to_do_list/component/widget/layout/popup.dart';
 import 'package:to_do_list/notifiers/user_notifier.dart';
 import 'package:to_do_list/pages/dashboard.dart';
 

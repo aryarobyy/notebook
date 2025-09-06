@@ -3,8 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_quill/flutter_quill.dart';
 import 'package:flutter_quill/quill_delta.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:to_do_list/component/widget/header.dart';
-import 'package:to_do_list/component/widget/popup.dart';
+import 'package:to_do_list/component/widget/layout/header.dart';
+import 'package:to_do_list/component/widget/layout/popup.dart';
 import 'package:to_do_list/notifiers/note_notifier.dart';
 import 'package:to_do_list/pages/dashboard.dart';
 

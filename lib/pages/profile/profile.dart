@@ -1,16 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:to_do_list/component/categories_card.dart';
-import 'package:to_do_list/component/note_card.dart';
-import 'package:to_do_list/component/text.dart';
-import 'package:to_do_list/component/widget/header.dart';
+import 'package:to_do_list/component/widget/card/categories_card.dart';
+import 'package:to_do_list/component/widget/layout/header.dart';
 import 'package:to_do_list/models/index.dart';
 import 'package:to_do_list/notifiers/category_notifier.dart';
 import 'package:to_do_list/notifiers/note_notifier.dart';
 import 'package:to_do_list/pages/dashboard.dart';
-import 'package:to_do_list/pages/home/activity.dart';
-import 'package:to_do_list/pages/home/home.dart';
-import 'package:to_do_list/pages/note/note.dart';
 
 final noteLoadingProvider = StateProvider<bool>((ref) => false);
 

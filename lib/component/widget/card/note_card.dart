@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:to_do_list/component/text.dart';
+import 'package:to_do_list/component/util/text.dart';
 
 class NoteCard extends StatelessWidget {
   final String title;

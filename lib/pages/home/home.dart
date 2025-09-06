@@ -1,17 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:to_do_list/component/button1.dart';
-import 'package:to_do_list/component/categories_card.dart';
-import 'package:to_do_list/component/note_card.dart';
 import 'package:to_do_list/component/size/size_config.dart';
-import 'package:to_do_list/component/text.dart';
+import 'package:to_do_list/component/widget/button/button1.dart';
+import 'package:to_do_list/component/widget/card/note_card.dart';
+import 'package:to_do_list/component/util/text.dart';
+import 'package:to_do_list/component/widget/card/todo_card.dart';
 import 'package:to_do_list/models/index.dart';
 import 'package:to_do_list/note_list.dart';
 import 'package:to_do_list/notifiers/category_notifier.dart';
 import 'package:to_do_list/notifiers/note_notifier.dart';
 import 'package:to_do_list/pages/home/activity.dart';
 import 'package:to_do_list/pages/home/category_setting.dart';
-import 'package:to_do_list/pages/profile_page.dart';
+import 'package:to_do_list/pages/profile/profile.dart';
 
 final navLoadingProvider = StateProvider<bool>((ref) => false);
 final navTitleProvider = StateProvider<String>((ref) => "All");
@@ -157,14 +157,7 @@ class _HomeState extends ConsumerState<Home> {
                 fontWeight: FontWeight.w600,
               ),
               const SizedBox(height: 10),
-              Expanded(
-                child: Activity(
-                  userData: widget.userData,
-                  navTitle: navTitle,
-                  notes: noteState.notes,
-                  category: catState.category
-                ),
-              )
+              TodoCard()
             ],
           ),
         ),

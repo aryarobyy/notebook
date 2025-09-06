@@ -1,8 +1,9 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/material.dart';
-import 'package:to_do_list/component/note_card.dart';
+import 'package:to_do_list/component/widget/card/note_card.dart';
 import 'package:to_do_list/models/index.dart';
 
-class NoteList extends StatelessWidget {
+class NoteList extends ConsumerWidget {
   final List<NoteModel> notes;
   final void Function(NoteModel note)? onNoteTap;
 
@@ -13,7 +14,7 @@ class NoteList extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     if (notes.isEmpty) {
       return const Center(
         child: Text(

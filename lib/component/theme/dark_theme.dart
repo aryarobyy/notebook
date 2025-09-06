@@ -22,7 +22,9 @@ final ThemeData darkTheme = ThemeData(
     foregroundColor: Colors.white,
   ),
   textTheme: GoogleFonts.robotoTextTheme(
-    ThemeData.dark().textTheme,
+    const TextTheme(
+
+    )
   ).apply(
       bodyColor: const Color(0xFFFFFFFF),
       displayColor: const Color(0xFFFFFFFF)

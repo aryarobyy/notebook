@@ -1,8 +1,8 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:to_do_list/component/categories_card.dart';
-import 'package:to_do_list/component/widget/header.dart';
+import 'package:to_do_list/component/widget/card/categories_card.dart';
+import 'package:to_do_list/component/widget/layout/header.dart';
 import 'package:to_do_list/models/category_model.dart';
 import 'package:to_do_list/models/index.dart';
 import 'package:to_do_list/notifiers/category_notifier.dart';
