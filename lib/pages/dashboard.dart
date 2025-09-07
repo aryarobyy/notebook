@@ -5,7 +5,7 @@ import 'package:to_do_list/pages/calendar/calendar.dart';
 import 'package:to_do_list/pages/focus/focus.dart';
 import 'package:to_do_list/pages/home/home.dart';
 import 'package:to_do_list/pages/note/add_note.dart';
-import 'package:to_do_list/pages/setting.dart';
+import 'package:to_do_list/pages/setting/setting.dart';
 import 'package:animated_bottom_navigation_bar/animated_bottom_navigation_bar.dart';
 
 class Dashboard extends ConsumerStatefulWidget {
