@@ -8,10 +8,11 @@ part 'todo_model.g.dart';
 sealed class TodoModel with _$TodoModel {
   factory TodoModel({
     required String id,
-    required String text,
-    required List<String> noteId,
-    required List<String> tags,
-    required List<String> subTasks,
+    required String title,
+    required String subTitle,
+    required List<String>? noteId,
+    required List<String>? tag,
+    required List<String>? subTasks,
     @Default(false) bool isDone,
     @JsonKey(fromJson: DateTimeFromJson) required DateTime createdAt,
     @JsonKey(fromJson: DateTimeFromJsonNullable) DateTime? lastActive,

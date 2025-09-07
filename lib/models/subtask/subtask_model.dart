@@ -9,7 +9,7 @@ sealed class SubTaskModel with _$SubTaskModel {
   factory SubTaskModel({
     required String id,
     required String text,
-    required List<String> noteId,
+    required List<String> todoId,
     @JsonKey(fromJson: DateTimeFromJson) required DateTime createdAt,
     @JsonKey(fromJson: DateTimeFromJsonNullable) DateTime? lastActive,
     @Default(false) bool isDone,
