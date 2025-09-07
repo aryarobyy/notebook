@@ -18,13 +18,15 @@ mixin _$NoteModel {
   String get creatorId;
   String get title;
   String get content;
-  @JsonKey(fromJson: _dateTimeFromJson)
+  @JsonKey(unknownEnumValue: NoteStatus.UNACTIVE)
+  NoteStatus get status;
+  @JsonKey(fromJson: DateTimeFromJson)
   DateTime get createdAt;
-  @JsonKey(fromJson: _dateTimeFromJsonNullable)
-  DateTime? get lastActive;
-  @JsonKey(fromJson: _dateTimeFromJsonNullable)
+  @JsonKey(fromJson: DateTimeFromJsonNullable)
+  DateTime? get updatedAt;
+  @JsonKey(fromJson: DateTimeFromJsonNullable)
   DateTime? get schedule;
-  List<String> get tags;
+  List<String> get tag;
 
   /// Create a copy of NoteModel
   /// with the given fields replaced by the non-null parameter values.
@@ -46,13 +48,14 @@ mixin _$NoteModel {
                 other.creatorId == creatorId) &&
             (identical(other.title, title) || other.title == title) &&
             (identical(other.content, content) || other.content == content) &&
+            (identical(other.status, status) || other.status == status) &&
             (identical(other.createdAt, createdAt) ||
                 other.createdAt == createdAt) &&
-            (identical(other.lastActive, lastActive) ||
-                other.lastActive == lastActive) &&
+            (identical(other.updatedAt, updatedAt) ||
+                other.updatedAt == updatedAt) &&
             (identical(other.schedule, schedule) ||
                 other.schedule == schedule) &&
-            const DeepCollectionEquality().equals(other.tags, tags));
+            const DeepCollectionEquality().equals(other.tag, tag));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
@@ -63,14 +66,15 @@ mixin _$NoteModel {
       creatorId,
       title,
       content,
+      status,
       createdAt,
-      lastActive,
+      updatedAt,
       schedule,
-      const DeepCollectionEquality().hash(tags));
+      const DeepCollectionEquality().hash(tag));
 
   @override
   String toString() {
-    return 'NoteModel(id: $id, creatorId: $creatorId, title: $title, content: $content, createdAt: $createdAt, lastActive: $lastActive, schedule: $schedule, tags: $tags)';
+    return 'NoteModel(id: $id, creatorId: $creatorId, title: $title, content: $content, status: $status, createdAt: $createdAt, updatedAt: $updatedAt, schedule: $schedule, tag: $tag)';
   }
 }
 
@@ -84,10 +88,11 @@ abstract mixin class $NoteModelCopyWith<$Res> {
       String creatorId,
       String title,
       String content,
-      @JsonKey(fromJson: _dateTimeFromJson) DateTime createdAt,
-      @JsonKey(fromJson: _dateTimeFromJsonNullable) DateTime? lastActive,
-      @JsonKey(fromJson: _dateTimeFromJsonNullable) DateTime? schedule,
-      List<String> tags});
+      @JsonKey(unknownEnumValue: NoteStatus.UNACTIVE) NoteStatus status,
+      @JsonKey(fromJson: DateTimeFromJson) DateTime createdAt,
+      @JsonKey(fromJson: DateTimeFromJsonNullable) DateTime? updatedAt,
+      @JsonKey(fromJson: DateTimeFromJsonNullable) DateTime? schedule,
+      List<String> tag});
 }
 
 /// @nodoc
@@ -106,10 +111,11 @@ class _$NoteModelCopyWithImpl<$Res> implements $NoteModelCopyWith<$Res> {
     Object? creatorId = null,
     Object? title = null,
     Object? content = null,
+    Object? status = null,
     Object? createdAt = null,
-    Object? lastActive = freezed,
+    Object? updatedAt = freezed,
     Object? schedule = freezed,
-    Object? tags = null,
+    Object? tag = null,
   }) {
     return _then(_self.copyWith(
       id: null == id
@@ -128,21 +134,25 @@ class _$NoteModelCopyWithImpl<$Res> implements $NoteModelCopyWith<$Res> {
           ? _self.content
           : content // ignore: cast_nullable_to_non_nullable
               as String,
+      status: null == status
+          ? _self.status
+          : status // ignore: cast_nullable_to_non_nullable
+              as NoteStatus,
       createdAt: null == createdAt
           ? _self.createdAt
           : createdAt // ignore: cast_nullable_to_non_nullable
               as DateTime,
-      lastActive: freezed == lastActive
-          ? _self.lastActive
-          : lastActive // ignore: cast_nullable_to_non_nullable
+      updatedAt: freezed == updatedAt
+          ? _self.updatedAt
+          : updatedAt // ignore: cast_nullable_to_non_nullable
               as DateTime?,
       schedule: freezed == schedule
           ? _self.schedule
           : schedule // ignore: cast_nullable_to_non_nullable
               as DateTime?,
-      tags: null == tags
-          ? _self.tags
-          : tags // ignore: cast_nullable_to_non_nullable
+      tag: null == tag
+          ? _self.tag
+          : tag // ignore: cast_nullable_to_non_nullable
               as List<String>,
     ));
   }
@@ -244,18 +254,27 @@ extension NoteModelPatterns on NoteModel {
             String creatorId,
             String title,
             String content,
-            @JsonKey(fromJson: _dateTimeFromJson) DateTime createdAt,
-            @JsonKey(fromJson: _dateTimeFromJsonNullable) DateTime? lastActive,
-            @JsonKey(fromJson: _dateTimeFromJsonNullable) DateTime? schedule,
-            List<String> tags)?
+            @JsonKey(unknownEnumValue: NoteStatus.UNACTIVE) NoteStatus status,
+            @JsonKey(fromJson: DateTimeFromJson) DateTime createdAt,
+            @JsonKey(fromJson: DateTimeFromJsonNullable) DateTime? updatedAt,
+            @JsonKey(fromJson: DateTimeFromJsonNullable) DateTime? schedule,
+            List<String> tag)?
         $default, {
     required TResult orElse(),
   }) {
     final _that = this;
     switch (_that) {
       case _NoteModel() when $default != null:
-        return $default(_that.id, _that.creatorId, _that.title, _that.content,
-            _that.createdAt, _that.lastActive, _that.schedule, _that.tags);
+        return $default(
+            _that.id,
+            _that.creatorId,
+            _that.title,
+            _that.content,
+            _that.status,
+            _that.createdAt,
+            _that.updatedAt,
+            _that.schedule,
+            _that.tag);
       case _:
         return orElse();
     }
@@ -281,17 +300,26 @@ extension NoteModelPatterns on NoteModel {
             String creatorId,
             String title,
             String content,
-            @JsonKey(fromJson: _dateTimeFromJson) DateTime createdAt,
-            @JsonKey(fromJson: _dateTimeFromJsonNullable) DateTime? lastActive,
-            @JsonKey(fromJson: _dateTimeFromJsonNullable) DateTime? schedule,
-            List<String> tags)
+            @JsonKey(unknownEnumValue: NoteStatus.UNACTIVE) NoteStatus status,
+            @JsonKey(fromJson: DateTimeFromJson) DateTime createdAt,
+            @JsonKey(fromJson: DateTimeFromJsonNullable) DateTime? updatedAt,
+            @JsonKey(fromJson: DateTimeFromJsonNullable) DateTime? schedule,
+            List<String> tag)
         $default,
   ) {
     final _that = this;
     switch (_that) {
       case _NoteModel():
-        return $default(_that.id, _that.creatorId, _that.title, _that.content,
-            _that.createdAt, _that.lastActive, _that.schedule, _that.tags);
+        return $default(
+            _that.id,
+            _that.creatorId,
+            _that.title,
+            _that.content,
+            _that.status,
+            _that.createdAt,
+            _that.updatedAt,
+            _that.schedule,
+            _that.tag);
     }
   }
 
@@ -314,17 +342,26 @@ extension NoteModelPatterns on NoteModel {
             String creatorId,
             String title,
             String content,
-            @JsonKey(fromJson: _dateTimeFromJson) DateTime createdAt,
-            @JsonKey(fromJson: _dateTimeFromJsonNullable) DateTime? lastActive,
-            @JsonKey(fromJson: _dateTimeFromJsonNullable) DateTime? schedule,
-            List<String> tags)?
+            @JsonKey(unknownEnumValue: NoteStatus.UNACTIVE) NoteStatus status,
+            @JsonKey(fromJson: DateTimeFromJson) DateTime createdAt,
+            @JsonKey(fromJson: DateTimeFromJsonNullable) DateTime? updatedAt,
+            @JsonKey(fromJson: DateTimeFromJsonNullable) DateTime? schedule,
+            List<String> tag)?
         $default,
   ) {
     final _that = this;
     switch (_that) {
       case _NoteModel() when $default != null:
-        return $default(_that.id, _that.creatorId, _that.title, _that.content,
-            _that.createdAt, _that.lastActive, _that.schedule, _that.tags);
+        return $default(
+            _that.id,
+            _that.creatorId,
+            _that.title,
+            _that.content,
+            _that.status,
+            _that.createdAt,
+            _that.updatedAt,
+            _that.schedule,
+            _that.tag);
       case _:
         return null;
     }
@@ -339,11 +376,12 @@ class _NoteModel implements NoteModel {
       required this.creatorId,
       required this.title,
       required this.content,
-      @JsonKey(fromJson: _dateTimeFromJson) required this.createdAt,
-      @JsonKey(fromJson: _dateTimeFromJsonNullable) this.lastActive,
-      @JsonKey(fromJson: _dateTimeFromJsonNullable) this.schedule,
-      required final List<String> tags})
-      : _tags = tags;
+      @JsonKey(unknownEnumValue: NoteStatus.UNACTIVE) required this.status,
+      @JsonKey(fromJson: DateTimeFromJson) required this.createdAt,
+      @JsonKey(fromJson: DateTimeFromJsonNullable) this.updatedAt,
+      @JsonKey(fromJson: DateTimeFromJsonNullable) this.schedule,
+      required final List<String> tag})
+      : _tag = tag;
   factory _NoteModel.fromJson(Map<String, dynamic> json) =>
       _$NoteModelFromJson(json);
 
@@ -356,20 +394,23 @@ class _NoteModel implements NoteModel {
   @override
   final String content;
   @override
-  @JsonKey(fromJson: _dateTimeFromJson)
+  @JsonKey(unknownEnumValue: NoteStatus.UNACTIVE)
+  final NoteStatus status;
+  @override
+  @JsonKey(fromJson: DateTimeFromJson)
   final DateTime createdAt;
   @override
-  @JsonKey(fromJson: _dateTimeFromJsonNullable)
-  final DateTime? lastActive;
+  @JsonKey(fromJson: DateTimeFromJsonNullable)
+  final DateTime? updatedAt;
   @override
-  @JsonKey(fromJson: _dateTimeFromJsonNullable)
+  @JsonKey(fromJson: DateTimeFromJsonNullable)
   final DateTime? schedule;
-  final List<String> _tags;
+  final List<String> _tag;
   @override
-  List<String> get tags {
-    if (_tags is EqualUnmodifiableListView) return _tags;
+  List<String> get tag {
+    if (_tag is EqualUnmodifiableListView) return _tag;
     // ignore: implicit_dynamic_type
-    return EqualUnmodifiableListView(_tags);
+    return EqualUnmodifiableListView(_tag);
   }
 
   /// Create a copy of NoteModel
@@ -397,13 +438,14 @@ class _NoteModel implements NoteModel {
                 other.creatorId == creatorId) &&
             (identical(other.title, title) || other.title == title) &&
             (identical(other.content, content) || other.content == content) &&
+            (identical(other.status, status) || other.status == status) &&
             (identical(other.createdAt, createdAt) ||
                 other.createdAt == createdAt) &&
-            (identical(other.lastActive, lastActive) ||
-                other.lastActive == lastActive) &&
+            (identical(other.updatedAt, updatedAt) ||
+                other.updatedAt == updatedAt) &&
             (identical(other.schedule, schedule) ||
                 other.schedule == schedule) &&
-            const DeepCollectionEquality().equals(other._tags, _tags));
+            const DeepCollectionEquality().equals(other._tag, _tag));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
@@ -414,14 +456,15 @@ class _NoteModel implements NoteModel {
       creatorId,
       title,
       content,
+      status,
       createdAt,
-      lastActive,
+      updatedAt,
       schedule,
-      const DeepCollectionEquality().hash(_tags));
+      const DeepCollectionEquality().hash(_tag));
 
   @override
   String toString() {
-    return 'NoteModel(id: $id, creatorId: $creatorId, title: $title, content: $content, createdAt: $createdAt, lastActive: $lastActive, schedule: $schedule, tags: $tags)';
+    return 'NoteModel(id: $id, creatorId: $creatorId, title: $title, content: $content, status: $status, createdAt: $createdAt, updatedAt: $updatedAt, schedule: $schedule, tag: $tag)';
   }
 }
 
@@ -438,10 +481,11 @@ abstract mixin class _$NoteModelCopyWith<$Res>
       String creatorId,
       String title,
       String content,
-      @JsonKey(fromJson: _dateTimeFromJson) DateTime createdAt,
-      @JsonKey(fromJson: _dateTimeFromJsonNullable) DateTime? lastActive,
-      @JsonKey(fromJson: _dateTimeFromJsonNullable) DateTime? schedule,
-      List<String> tags});
+      @JsonKey(unknownEnumValue: NoteStatus.UNACTIVE) NoteStatus status,
+      @JsonKey(fromJson: DateTimeFromJson) DateTime createdAt,
+      @JsonKey(fromJson: DateTimeFromJsonNullable) DateTime? updatedAt,
+      @JsonKey(fromJson: DateTimeFromJsonNullable) DateTime? schedule,
+      List<String> tag});
 }
 
 /// @nodoc
@@ -460,10 +504,11 @@ class __$NoteModelCopyWithImpl<$Res> implements _$NoteModelCopyWith<$Res> {
     Object? creatorId = null,
     Object? title = null,
     Object? content = null,
+    Object? status = null,
     Object? createdAt = null,
-    Object? lastActive = freezed,
+    Object? updatedAt = freezed,
     Object? schedule = freezed,
-    Object? tags = null,
+    Object? tag = null,
   }) {
     return _then(_NoteModel(
       id: null == id
@@ -482,21 +527,25 @@ class __$NoteModelCopyWithImpl<$Res> implements _$NoteModelCopyWith<$Res> {
           ? _self.content
           : content // ignore: cast_nullable_to_non_nullable
               as String,
+      status: null == status
+          ? _self.status
+          : status // ignore: cast_nullable_to_non_nullable
+              as NoteStatus,
       createdAt: null == createdAt
           ? _self.createdAt
           : createdAt // ignore: cast_nullable_to_non_nullable
               as DateTime,
-      lastActive: freezed == lastActive
-          ? _self.lastActive
-          : lastActive // ignore: cast_nullable_to_non_nullable
+      updatedAt: freezed == updatedAt
+          ? _self.updatedAt
+          : updatedAt // ignore: cast_nullable_to_non_nullable
               as DateTime?,
       schedule: freezed == schedule
           ? _self.schedule
           : schedule // ignore: cast_nullable_to_non_nullable
               as DateTime?,
-      tags: null == tags
-          ? _self._tags
-          : tags // ignore: cast_nullable_to_non_nullable
+      tag: null == tag
+          ? _self._tag
+          : tag // ignore: cast_nullable_to_non_nullable
               as List<String>,
     ));
   }

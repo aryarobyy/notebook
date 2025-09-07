@@ -13,8 +13,8 @@ _UserModel _$UserModelFromJson(Map<String, dynamic> json) => _UserModel(
       image: json['image'] as String?,
       role: $enumDecode(_$RoleEnumMap, json['role'], unknownValue: Role.USER),
       email: json['email'] as String,
-      createdAt: _dateTimeFromJson(json['createdAt']),
-      lastActive: _dateTimeFromJsonNullable(json['lastActive']),
+      createdAt: DateTimeFromJson(json['createdAt']),
+      lastActive: DateTimeFromJsonNullable(json['lastActive']),
     );
 
 Map<String, dynamic> _$UserModelToJson(_UserModel instance) =>

@@ -21,9 +21,9 @@ mixin _$UserModel {
   @JsonKey(unknownEnumValue: Role.USER)
   Role get role;
   String get email;
-  @JsonKey(fromJson: _dateTimeFromJson)
+  @JsonKey(fromJson: DateTimeFromJson)
   DateTime get createdAt;
-  @JsonKey(fromJson: _dateTimeFromJsonNullable)
+  @JsonKey(fromJson: DateTimeFromJsonNullable)
   DateTime? get lastActive;
 
   /// Create a copy of UserModel
@@ -77,8 +77,8 @@ abstract mixin class $UserModelCopyWith<$Res> {
       String? image,
       @JsonKey(unknownEnumValue: Role.USER) Role role,
       String email,
-      @JsonKey(fromJson: _dateTimeFromJson) DateTime createdAt,
-      @JsonKey(fromJson: _dateTimeFromJsonNullable) DateTime? lastActive});
+      @JsonKey(fromJson: DateTimeFromJson) DateTime createdAt,
+      @JsonKey(fromJson: DateTimeFromJsonNullable) DateTime? lastActive});
 }
 
 /// @nodoc
@@ -237,8 +237,8 @@ extension UserModelPatterns on UserModel {
             String? image,
             @JsonKey(unknownEnumValue: Role.USER) Role role,
             String email,
-            @JsonKey(fromJson: _dateTimeFromJson) DateTime createdAt,
-            @JsonKey(fromJson: _dateTimeFromJsonNullable) DateTime? lastActive)?
+            @JsonKey(fromJson: DateTimeFromJson) DateTime createdAt,
+            @JsonKey(fromJson: DateTimeFromJsonNullable) DateTime? lastActive)?
         $default, {
     required TResult orElse(),
   }) {
@@ -274,8 +274,8 @@ extension UserModelPatterns on UserModel {
             String? image,
             @JsonKey(unknownEnumValue: Role.USER) Role role,
             String email,
-            @JsonKey(fromJson: _dateTimeFromJson) DateTime createdAt,
-            @JsonKey(fromJson: _dateTimeFromJsonNullable) DateTime? lastActive)
+            @JsonKey(fromJson: DateTimeFromJson) DateTime createdAt,
+            @JsonKey(fromJson: DateTimeFromJsonNullable) DateTime? lastActive)
         $default,
   ) {
     final _that = this;
@@ -307,8 +307,8 @@ extension UserModelPatterns on UserModel {
             String? image,
             @JsonKey(unknownEnumValue: Role.USER) Role role,
             String email,
-            @JsonKey(fromJson: _dateTimeFromJson) DateTime createdAt,
-            @JsonKey(fromJson: _dateTimeFromJsonNullable) DateTime? lastActive)?
+            @JsonKey(fromJson: DateTimeFromJson) DateTime createdAt,
+            @JsonKey(fromJson: DateTimeFromJsonNullable) DateTime? lastActive)?
         $default,
   ) {
     final _that = this;
@@ -332,8 +332,8 @@ class _UserModel implements UserModel {
       this.image,
       @JsonKey(unknownEnumValue: Role.USER) required this.role,
       required this.email,
-      @JsonKey(fromJson: _dateTimeFromJson) required this.createdAt,
-      @JsonKey(fromJson: _dateTimeFromJsonNullable) this.lastActive});
+      @JsonKey(fromJson: DateTimeFromJson) required this.createdAt,
+      @JsonKey(fromJson: DateTimeFromJsonNullable) this.lastActive});
   factory _UserModel.fromJson(Map<String, dynamic> json) =>
       _$UserModelFromJson(json);
 
@@ -351,10 +351,10 @@ class _UserModel implements UserModel {
   @override
   final String email;
   @override
-  @JsonKey(fromJson: _dateTimeFromJson)
+  @JsonKey(fromJson: DateTimeFromJson)
   final DateTime createdAt;
   @override
-  @JsonKey(fromJson: _dateTimeFromJsonNullable)
+  @JsonKey(fromJson: DateTimeFromJsonNullable)
   final DateTime? lastActive;
 
   /// Create a copy of UserModel
@@ -416,8 +416,8 @@ abstract mixin class _$UserModelCopyWith<$Res>
       String? image,
       @JsonKey(unknownEnumValue: Role.USER) Role role,
       String email,
-      @JsonKey(fromJson: _dateTimeFromJson) DateTime createdAt,
-      @JsonKey(fromJson: _dateTimeFromJsonNullable) DateTime? lastActive});
+      @JsonKey(fromJson: DateTimeFromJson) DateTime createdAt,
+      @JsonKey(fromJson: DateTimeFromJsonNullable) DateTime? lastActive});
 }
 
 /// @nodoc

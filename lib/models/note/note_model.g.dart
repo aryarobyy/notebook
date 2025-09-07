@@ -11,10 +11,12 @@ _NoteModel _$NoteModelFromJson(Map<String, dynamic> json) => _NoteModel(
       creatorId: json['creatorId'] as String,
       title: json['title'] as String,
       content: json['content'] as String,
-      createdAt: _dateTimeFromJson(json['createdAt']),
-      lastActive: _dateTimeFromJsonNullable(json['lastActive']),
-      schedule: _dateTimeFromJsonNullable(json['schedule']),
-      tags: (json['tags'] as List<dynamic>).map((e) => e as String).toList(),
+      status: $enumDecode(_$NoteStatusEnumMap, json['status'],
+          unknownValue: NoteStatus.UNACTIVE),
+      createdAt: DateTimeFromJson(json['createdAt']),
+      updatedAt: DateTimeFromJsonNullable(json['updatedAt']),
+      schedule: DateTimeFromJsonNullable(json['schedule']),
+      tag: (json['tag'] as List<dynamic>).map((e) => e as String).toList(),
     );
 
 Map<String, dynamic> _$NoteModelToJson(_NoteModel instance) =>
@@ -23,8 +25,14 @@ Map<String, dynamic> _$NoteModelToJson(_NoteModel instance) =>
       'creatorId': instance.creatorId,
       'title': instance.title,
       'content': instance.content,
+      'status': _$NoteStatusEnumMap[instance.status]!,
       'createdAt': instance.createdAt.toIso8601String(),
-      'lastActive': instance.lastActive?.toIso8601String(),
+      'updatedAt': instance.updatedAt?.toIso8601String(),
       'schedule': instance.schedule?.toIso8601String(),
-      'tags': instance.tags,
+      'tag': instance.tag,
     };
+
+const _$NoteStatusEnumMap = {
+  NoteStatus.ACTIVE: 'ACTIVE',
+  NoteStatus.UNACTIVE: 'UNACTIVE',
+};
