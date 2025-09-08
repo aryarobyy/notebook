@@ -59,14 +59,10 @@ class NoteService {
     }
   }
 
-  Future<void> updateNote({
+  Future<NoteModel> updateNote({
     required String creatorId,
     required String noteId,
-    String? title,
-    String? content,
-    DateTime? schedule,
-    NoteStatus? status,
-    List<SubTaskModel>? subTasks,
+    required Map<String, dynamic> updatedData,
   }) async {
     try {
       final creatorSnap =
@@ -74,26 +70,17 @@ class NoteService {
           .collection(userCol)
           .doc(creatorId)
           .get();
-      if (!creatorSnap.exists) {
-        throw Exception("Unknown creator: $creatorId");
-      }
-
-      final Map<String, dynamic> data = {};
-      if (title != null) data['title'] = title;
-      if (content != null) data['content'] = content;
-      if (schedule != null) data['schedule'] = schedule;
-      if (status != null) data['status'] = status.name;
-      if (subTasks != null) {
-        data['subTasks'] = subTasks.map((s) => s.toJson()).toList();
-      }
-      data['updatedAt'] = DateTime.now();
+      if (!creatorSnap.exists) throw Exception("Unknown creator: $creatorId");
+      if (updatedData.isEmpty) throw Exception("No data to update");
 
       await _fireStore
           .collection(userCol)
           .doc(creatorId)
           .collection(notesCol)
           .doc(noteId)
-          .update(data);
+          .update(updatedData);
+
+      return NoteModel.fromJson(updatedData);
     } catch (e, stackTrace) {
       handleError(e, stackTrace);
       rethrow;

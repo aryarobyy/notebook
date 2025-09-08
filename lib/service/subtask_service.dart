@@ -14,7 +14,7 @@ class SubtaskService {
   Future<SubTaskModel> createSubtask({
     required String creatorId,
     required String todoId,
-    required String content,
+    required String text,
     bool isDone = false,
   }) async {
     try{
@@ -22,8 +22,7 @@ class SubtaskService {
 
       final subtask = SubTaskModel(
         id: id,
-        text: content,
-        todoId: [todoId],
+        text: text,
         createdAt: DateTime.now(),
         isDone: isDone,
       );
@@ -43,12 +42,11 @@ class SubtaskService {
     }
   }
 
-  Future<void> UpdateSubtask({
+  Future<SubTaskModel> UpdateSubtask({
     required String creatorId,
     required String todoId,
     required String subtaskId,
-    String? content,
-    bool? isDone,
+    required String text,
   }) async {
     try{
       final creatorSnap = await _fireStore
@@ -61,8 +59,6 @@ class SubtaskService {
       }
 
       final Map<String, dynamic> data = {};
-      if (content != null) data['content'] = content;
-      if (isDone != null) data['isDone'] = isDone;
 
       await _fireStore
           .collection(userCol)
@@ -72,6 +68,28 @@ class SubtaskService {
           .collection(subtaskCol)
           .doc(subtaskId)
           .update(data);
+      return SubTaskModel.fromJson(data);
+    } catch (e, stackTrace) {
+      handleError(e, stackTrace);
+      rethrow;
+    }
+  }
+
+  Future<void> changeStatus({
+    required bool isDone,
+    required String creatorId,
+    required String todoId,
+    required String subtaskId,
+  }) async{
+    try{
+      await _fireStore
+          .collection(userCol)
+          .doc(creatorId)
+          .collection(todoCol)
+          .doc(todoId)
+          .collection(subtaskCol)
+          .doc(subtaskId)
+          .update({'isDone': isDone});
     } catch (e, stackTrace) {
       handleError(e, stackTrace);
       rethrow;

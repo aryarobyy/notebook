@@ -9,7 +9,7 @@ final String categoryCol = CATEGORY_COLLECTION;
 class CategoryService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  Future<CategoryModel> postCategory({
+  Future<CategoryModel> addCategory({
     required String creatorId,
     required String title,
     List<String>? noteId,
@@ -80,7 +80,7 @@ class CategoryService {
     }
   }
 
-  Future<CategoryModel?> getCategoryByTitle({
+  Future<CategoryModel> getCategoryByTitle({
     required String creatorId,
     required String title,
   }) async {
@@ -97,7 +97,6 @@ class CategoryService {
           .doc(formattedTitle);
 
       final querySnap = await docRef.get();
-      if (!querySnap.exists) return null;
 
       return CategoryModel.fromJson({
         'title': querySnap.id,
@@ -109,7 +108,7 @@ class CategoryService {
     }
   }
 
-  Future<void> updateCategory({
+  Future<CategoryModel> updateCategory({
     required String creatorId,
     required String title,
     List<String> addNoteId = const [],
@@ -145,13 +144,14 @@ class CategoryService {
         updateData['updatedAt'] = FieldValue.serverTimestamp();
         await categoryRef.update(updateData);
       }
+      return CategoryModel.fromJson(updateData);
     } catch (e, stackTrace) {
       handleError(e, stackTrace);
       rethrow;
     }
   }
 
-  Future<void> updateCategoryTitle({
+  Future<CategoryModel> updateTitle({
     required String creatorId,
     required String oldTitle,
     required String newTitle,
@@ -173,6 +173,7 @@ class CategoryService {
       if (!oldSnap.exists) throw Exception("Old category not found");
 
       final oldData = oldSnap.data()!;
+
       await newRef.set({
         ...oldData,
         'title': newFormatted,
@@ -180,11 +181,17 @@ class CategoryService {
       });
 
       await oldRef.delete();
+
+      final newSnap = await newRef.get();
+      if (!newSnap.exists) throw Exception("Failed to create new category");
+
+      return CategoryModel.fromJson(newSnap.data()!);
     } catch (e, stackTrace) {
       handleError(e, stackTrace);
       rethrow;
     }
   }
+
 
   String _titleHandler(String title) {
     return title

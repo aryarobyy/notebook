@@ -54,36 +54,27 @@ class TodoService {
     }
   }
 
-  Future<void> updateTodo({
+  Future<TodoModel> updateTodo({
     required String creatorId,
     required String todoId,
-    String? title,
-    String? subTitle,
-    List<String>? tag,
-    List<SubTaskModel>? subTasks,
-    List<String>? noteId,
+    required Map<String, dynamic> updatedData
   }) async {
     try {
       final creatorSnap =
-      await _fireStore.collection(userCol).doc(creatorId).get();
-      if (!creatorSnap.exists) {
-        throw Exception("Unknown creator: $creatorId");
-      }
-
-      final Map<String, dynamic> data = {};
-      if (title != null) data['title'] = title;
-      data['content'] = todoId;
-      if (subTasks != null) {
-        data['subTasks'] = subTasks.map((s) => s.toJson()).toList();
-      }
-      data['updatedAt'] = DateTime.now();
+      await _fireStore
+          .collection(userCol)
+          .doc(creatorId)
+          .get();
+      if (!creatorSnap.exists) throw Exception("Unknown creator: $creatorId");
+      if(updatedData.isEmpty) throw Exception("No data to update");
 
       await _fireStore
           .collection(userCol)
           .doc(creatorId)
           .collection(todoCol)
           .doc(todoId)
-          .update(data);
+          .update(updatedData);
+      return TodoModel.fromJson(updatedData);
     } catch (e, stackTrace) {
       handleError(e, stackTrace);
       rethrow;
