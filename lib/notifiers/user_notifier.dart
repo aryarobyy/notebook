@@ -2,13 +2,11 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:to_do_list/models/user_model.dart';
-import 'package:to_do_list/provider/category_provider.dart';
-import 'package:to_do_list/provider/user_provider.dart';
+import 'package:to_do_list/models/user/user_model.dart';
+import 'package:to_do_list/service/user_service.dart';
 
-final userServiceProvider = Provider((ref) => UserProvider());
+final userServiceProvider = Provider((ref) => UserService());
 final secureStorageProvider = Provider((ref) => FlutterSecureStorage());
-FlutterSecureStorage _storage = FlutterSecureStorage();
 
 @immutable
 class UserState {
@@ -36,15 +34,15 @@ class UserState {
 }
 
 class UserNotifier extends StateNotifier<UserState> {
-  UserNotifier(this._provider, this._storage) : super(const UserState());
+  UserNotifier(this._service, this._storage) : super(const UserState());
 
-  final UserProvider _provider;
+  final UserService _service;
   final FlutterSecureStorage _storage;
 
   Future<void> login(String email, String password) async {
     state = state.copyWith(isLoading: true, error: null);
     try {
-      await _provider.login(email: email, password: password);
+      await _service.login(email: email, password: password);
       await currentUser();
       state = state.copyWith(isLoading: false, error: null);
     } catch (e) {
@@ -55,7 +53,7 @@ class UserNotifier extends StateNotifier<UserState> {
   Future<void> register(String username, String email, String password) async {
     state = state.copyWith(isLoading: true, error: null);
     try {
-      await _provider.register(
+      await _service.register(
         username: username,
         email: email,
         password: password,
@@ -69,74 +67,25 @@ class UserNotifier extends StateNotifier<UserState> {
 
   Future<void> currentUser() async {
     state = state.copyWith(isLoading: true, error: null);
-
     try {
-      final tokenValid = await verifToken();
+      final userDataString = await _storage.read(key: "userData");
+      final userMap = jsonDecode(userDataString!);
 
-      if (!tokenValid) {
-        print('Token tidak valid');
-        state = state.copyWith(isLoading: false, user: null, error: null);
-        return;
-      }
+      final user = UserModel.fromJson(userMap);
 
-      print('Token valid, mengambil userData...');
-      final userDataString = await _storage.read(key: 'userData');
-
-      if (userDataString == null || userDataString.isEmpty) {
-        print('UserData tidak ditemukan');
-        state = state.copyWith(isLoading: false, user: null, error: null);
-        return;
-      }
-
-      Map<String, dynamic> userMap;
-      try {
-        userMap = jsonDecode(userDataString);
-      } catch (e, s) {
-        state = state.copyWith(
-            user: null,
-            error: "Gagal parse JSON: ${e.toString()}",
-            isLoading: false);
-        await logout();
-        return;
-      }
-
-      UserModel user;
-      try {
-        user = UserModel.fromJson(userMap);
-      } catch (e, s) {
-        state = state.copyWith(
-            user: null,
-            error: "Gagal konversi data user: ${e.toString()}",
-            isLoading: false);
-        await logout();
-        return;
-      }
-
-      print('Cek CurrentUser berhasil, user: ${user.toString()}');
       state = state.copyWith(user: user, isLoading: false, error: null);
-
-    } catch (e, stackTrace) {
-      print('currentUser - Error umum di luar dugaan: $e\n$stackTrace');
-      state = state.copyWith(user: null, error: e.toString(), isLoading: false);
+    } catch (e, s) {
+      state = state.copyWith(isLoading: false, user: null, error: e.toString());
       await logout();
     }
   }
 
-  Future<bool> verifToken() async {
+  Future<bool> verifyToken() async {
     try {
-      final token = await _storage.read(key: 'token');
-      print('Token: $token');
-
-      if (token == null || token.isEmpty) {
-        print('Token tidak ditemukan');
-        return false;
-      }
-
-      final bool isUserValid = await _provider.verifyToken(token);
+      final bool isUserValid = await _service.verifyToken();
 
       if (!isUserValid) {
         print('Token tidak valid, menghapus dari storage');
-        await _storage.delete(key: 'token');
         return false;
       }
 
@@ -147,33 +96,28 @@ class UserNotifier extends StateNotifier<UserState> {
     }
   }
 
-
-  Future<UserModel> update({
+  Future<void> update({
     required String userId,
     required Map<String, dynamic> updatedData,
   }) async {
     state = state.copyWith(isLoading: true, error: null);
     try {
       final data =
-          await _provider.updateUser(userId: userId, updatedData: updatedData);
+          await _service.updateUser(userId: userId, updatedData: updatedData);
 
       state = state.copyWith(isLoading: false, user: data);
-      return data;
     } catch (e) {
       state = state.copyWith(error: e.toString(), isLoading: false);
       rethrow;
     }
   }
 
-  Future<void> logout([Map<String, dynamic>? userData]) async {
+  Future<void> logout() async {
     try {
       state = state.copyWith(isLoading: true, error: null);
-      if (userData != null && userData.containsKey('id')) {
-        await _provider.logout(userData['id']);
-      }
+      await _service.signOut();
 
-      await _storage.delete(key: 'userData');
-      await _storage.delete(key: 'token');
+      await _storage.deleteAll();
 
       state = state.copyWith(user: null, isLoading: false);
     } catch (e, stackTrace) {
@@ -185,7 +129,7 @@ class UserNotifier extends StateNotifier<UserState> {
   Future<void> signIn() async {
     try {
       state = state.copyWith(isLoading: true, error: null);
-      await _provider.googleSignIn();
+      await _service.signInWithGoogle();
     } catch (e, stackTrace) {
       print('Error during signIn: $e\n$stackTrace');
       state = state.copyWith(user: null, error: e.toString(), isLoading: false);
