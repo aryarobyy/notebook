@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:http/http.dart' as http;
 import 'package:image/image.dart' as img;
 import 'package:path_provider/path_provider.dart';
@@ -17,6 +18,23 @@ class UserService {
   final FirebaseFirestore _fireStore = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final _storage = const FlutterSecureStorage();
+  final _googleSignIn = GoogleSignIn.instance;
+  bool _isGoogleSignInInitialized = false;
+
+  Future<void> InitializeGoogleSignIn() async {
+    try {
+      await _googleSignIn.initialize();
+      _isGoogleSignInInitialized = true;
+    } catch (e) {
+      print('Failed to initialize Google Sign-In: $e');
+    }
+  }
+
+  Future<void> _ensureGoogleSignInInitialized() async {
+    if (!_isGoogleSignInInitialized) {
+      await InitializeGoogleSignIn();
+    }
+  }
 
   bool isValidEmail(String email) {
     final regex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
@@ -78,6 +96,23 @@ class UserService {
       await _storage.write(key: 'userData', value: jsonEncode(jsonData));
 
       return userModel;
+    } on FirebaseAuthException catch (e, stackTrace) {
+      String message;
+      switch (e.code) {
+        case 'email-already-in-use':
+          message = "This email is already registered. Please login instead.";
+          break;
+        case 'invalid-email':
+          message = "The email format is invalid.";
+          break;
+        case 'weak-password':
+          message = "Password is too weak. Try a stronger one.";
+          break;
+        default:
+          message = "Registration failed. Code: ${e.code}";
+      }
+      handleError(message, stackTrace);
+      throw Exception(message);
     } catch (e, stackTrace) {
       handleError(e, stackTrace);
       rethrow;
@@ -101,8 +136,8 @@ class UserService {
       final user = userCred.user;
       if (user == null) throw Exception("Failed to retrieve user information");
 
-      final token = await user.getIdToken();
-      await _storage.write(key: 'token', value: token);
+      final token = await user.getIdToken(true);
+      if (token!.isEmpty) throw Exception("Failed to retrieve token");
 
       final querySnap = await _fireStore
           .collection(userCol)
@@ -127,6 +162,87 @@ class UserService {
     } catch (e, stackTrace) {
       handleError(e, stackTrace);
       rethrow;
+    }
+  }
+
+  Future<UserModel> updateUser ({
+    required String userId,
+    required Map<String, dynamic> updatedData
+  }) async {
+    try{
+      final userSnap =
+      await _fireStore
+          .collection(userCol)
+          .doc(userId)
+          .get();
+      if (!userSnap.exists) throw Exception("Unknown user: $userId");
+      if(updatedData.isEmpty) throw Exception("No data to update");
+      if(updatedData['role']) throw Exception("Cant update Role in here");
+
+      await _fireStore
+          .collection(userCol)
+          .doc(userId)
+          .update(updatedData);
+      return UserModel.fromJson(updatedData);
+    } catch (e, stackTrace) {
+      handleError(e, stackTrace);
+      rethrow;
+    }
+  }
+
+  Future<bool> changeRole(String userId, Role newRole) async {
+    try {
+      final currUser = await _storage.read(key: "userData");
+
+      if (currUser == null || !currUser.contains("SUPER_ADMIN")) {
+        throw Exception("Only SUPER_ADMIN can change roles");
+      }
+
+      if (newRole == Role.SUPER_ADMIN) {
+        throw Exception("Cannot assign SUPER_ADMIN role");
+      }
+
+      await _fireStore
+          .collection(userCol)
+          .doc(userId)
+          .update({'role': newRole.toString().split('.').last});
+
+      return true;
+    } catch (e, stackTrace) {
+      handleError(e, stackTrace);
+      rethrow;
+    }
+  }
+
+  Future<bool> verifyToken() async {
+    try {
+      final firebaseUser = _auth.currentUser;
+
+      if (firebaseUser == null) {
+        print("Tidak ada user login (token expired / belum login)");
+        await signOut();
+        return false;
+      }
+
+      await firebaseUser.getIdToken();
+
+      final userDoc = await _fireStore.collection(userCol).doc(firebaseUser.uid).get();
+
+      if (!userDoc.exists) {
+        print("User tidak ditemukan di Firestore, logout");
+        await signOut();
+        return false;
+      }
+
+      return true;
+    } on FirebaseAuthException catch (e, s) {
+      print("verifyToken FirebaseAuth error: ${e.code} - ${e.message}\n$s");
+      await signOut();
+      return false;
+    } catch (e, s) {
+      print("verifyToken error: $e\n$s");
+      await signOut();
+      return false;
     }
   }
 
@@ -184,11 +300,6 @@ class UserService {
     }
   }
 
-  Future<void> signOut() async {
-    await _storage.deleteAll();
-    await _auth.signOut();
-  }
-
   Future<void> savingUser() async {
     try {
       final userDataString = await _storage.read(key: 'userData');
@@ -244,4 +355,44 @@ class UserService {
       rethrow;
     }
   }
+
+  GoogleSignInAuthentication getAuthTokens(GoogleSignInAccount account) {
+    return account.authentication;
+  }
+
+  Future<GoogleSignInAccount> signInWithGoogle() async {
+    await _ensureGoogleSignInInitialized();
+    try {
+      final GoogleSignInAccount account = await _googleSignIn.authenticate(
+        scopeHint: ['email'],
+      );
+      final GoogleSignInAuthentication googleAuth = await account.authentication;
+      final authClient = _googleSignIn.authorizationClient;
+      final authorization = await authClient.authorizationForScopes(['email']);
+      final AuthCredential authCredential = GoogleAuthProvider.credential(
+        accessToken: authorization?.accessToken,
+        idToken: googleAuth.idToken
+      );
+      await _auth.signInWithCredential(authCredential);
+
+      if (_auth.currentUser != null) {
+        throw("Login success");
+      } else {
+        throw("Google Sign-In failed: User is null");
+      }
+    } on GoogleSignInException catch (e, stackTrace) {
+        handleError(e, stackTrace);
+        rethrow;
+      } catch (error) {
+        print('Unexpected Google Sign-In error: $error');
+        rethrow;
+      }
+  }
+
+  Future<void> signOut() async {
+    await _storage.deleteAll();
+    await _googleSignIn.signOut();
+    await _auth.signOut();
+  }
+
 }
