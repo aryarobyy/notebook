@@ -12,6 +12,18 @@ class _LoginState extends ConsumerState<Login> {
   TextEditingController _passwordController = TextEditingController();
 
   @override
+  void initState() {
+    UserService().InitializeGoogleSignIn();
+    super.initState();
+  }
+
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final state    = ref.watch(userNotifierProvider);
     final notifier = ref.read(userNotifierProvider.notifier);
@@ -19,19 +31,22 @@ class _LoginState extends ConsumerState<Login> {
     final cs = Theme.of(context).colorScheme;
 
     void _handleLogin() async {
-      if(state.isLoading) return;
+      if (state.isLoading) return;
 
-      await notifier.login(
-        _emailController.text.trim(),
-        _passwordController.text
-      );
+      try {
+        await notifier.login(
+          _emailController.text.trim(),
+          _passwordController.text,
+        );
 
-      if (ref.read(userNotifierProvider).error != null) {
-        print("Ada yang salah nih woiii: ${ref.read(userNotifierProvider).error}");
-        return;
-      } else {
         MyPopup.show(context, title: "Login successful!");
-        Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => Dashboard()));
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => Dashboard()),
+        );
+      } catch (e) {
+        print("Ada yang salah nih woiii: $e");
+        MyPopup.show(context, title: "Login gagal: $e");
       }
     }
 

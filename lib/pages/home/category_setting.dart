@@ -3,9 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:to_do_list/component/widget/card/categories_card.dart';
 import 'package:to_do_list/component/widget/layout/header.dart';
-import 'package:to_do_list/models/category_model.dart';
+import 'package:to_do_list/models/category/category_model.dart';
 import 'package:to_do_list/models/index.dart';
 import 'package:to_do_list/notifiers/category_notifier.dart';
+import 'package:to_do_list/notifiers/note_notifier.dart';
 import 'package:to_do_list/pages/dashboard.dart';
 
 class CategorySetting extends ConsumerStatefulWidget {
@@ -63,6 +64,7 @@ class _CategorySettingState extends ConsumerState<CategorySetting> {
 
   Widget _buildCategories(BuildContext context, WidgetRef ref) {
     final state = ref.watch(categoryNotifierProvider);
+    final note = ref.watch(noteNotifierProvider).note;
 
     if (state.categories == null || state.categories!.isEmpty) {
       return const Padding(
@@ -79,7 +81,7 @@ class _CategorySettingState extends ConsumerState<CategorySetting> {
         itemBuilder: (BuildContext context, int index) {
           final category = state.categories![index];
 
-          return CategoriesCard(userData: widget.userData, category: category);
+          return CategoriesCard(userData: widget.userData, category: category, note: note!,);
         },
       ),
     );

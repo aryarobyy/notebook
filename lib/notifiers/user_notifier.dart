@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:to_do_list/models/user/user_model.dart';
 import 'package:to_do_list/service/user_service.dart';
+import 'package:flutter_riverpod/legacy.dart';
 
 final userServiceProvider = Provider((ref) => UserService());
 final secureStorageProvider = Provider((ref) => FlutterSecureStorage());

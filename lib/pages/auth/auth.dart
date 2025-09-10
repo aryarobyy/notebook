@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:to_do_list/component/widget/field/text_field.dart';
 import 'package:to_do_list/component/util/loading.dart';
 import 'package:to_do_list/component/widget/layout/popup.dart';
 import 'package:to_do_list/notifiers/user_notifier.dart';
 import 'package:to_do_list/pages/dashboard.dart';
+import 'package:to_do_list/service/user_service.dart';
 
 part 'login.dart';
 part 'register.dart';
@@ -35,7 +37,7 @@ class _AuthState extends ConsumerState<Auth> {
 
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (newState.error != null) {
-          print('Ada error, navigate ke Login');
+          print('User kosong, navigate ke Login');
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(builder: (_) => const Login()),

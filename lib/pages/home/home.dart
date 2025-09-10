@@ -6,12 +6,11 @@ import 'package:to_do_list/component/widget/card/note_card.dart';
 import 'package:to_do_list/component/util/text.dart';
 import 'package:to_do_list/component/widget/card/todo_card.dart';
 import 'package:to_do_list/models/index.dart';
-import 'package:to_do_list/note_list.dart';
 import 'package:to_do_list/notifiers/category_notifier.dart';
 import 'package:to_do_list/notifiers/note_notifier.dart';
-import 'package:to_do_list/pages/home/activity.dart';
 import 'package:to_do_list/pages/home/category_setting.dart';
 import 'package:to_do_list/pages/profile/profile.dart';
+import 'package:flutter_riverpod/legacy.dart';
 
 final navLoadingProvider = StateProvider<bool>((ref) => false);
 final navTitleProvider = StateProvider<String>((ref) => "All");
@@ -62,8 +61,7 @@ class _HomeState extends ConsumerState<Home> {
   Future<void> _createCategory() async {
     final notifier = ref.read(categoryNotifierProvider.notifier);
     try{
-      final data = await notifier.addCategory(creatorId: widget.userData.id, title: _categoryController.text);
-      print("data sended $data");
+      await notifier.addCategory(creatorId: widget.userData.id, title: _categoryController.text);
     } catch (e) {
       print(e);
     }

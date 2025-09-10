@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/legacy.dart';
 import 'package:to_do_list/component/widget/card/categories_card.dart';
 import 'package:to_do_list/component/widget/layout/header.dart';
 import 'package:to_do_list/models/index.dart';
@@ -168,7 +169,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
         itemBuilder: (BuildContext context, int index) {
           final category = catState.categories![index];
 
-          return CategoriesCard(userData: widget.userData, category: category);
+          return CategoriesCard(userData: widget.userData, category: category, note: noteState.note!,);
         },
       ),
     );

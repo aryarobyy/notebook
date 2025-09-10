@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:to_do_list/pages/todo/subtask.dart';
 
 class TodoCard extends ConsumerStatefulWidget {
   const TodoCard({super.key});
@@ -18,52 +19,57 @@ class _TodoCardState extends ConsumerState<TodoCard> {
         borderRadius: BorderRadius.circular(16),
       ),
       elevation: 3,
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            ClipRRect(
-              borderRadius: BorderRadius.circular(8),
-              child: Image.asset(
-                "assets/images/google.png",
-                width: 48,
-                height: 48,
-                fit: BoxFit.cover,
+      child: InkWell(
+        onTap: () {
+          Navigator.push(context, MaterialPageRoute(builder: (_) => SubtaskCard()));
+        },
+        child: Padding(
+          padding: const EdgeInsets.all(12),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              ClipRRect(
+                borderRadius: BorderRadius.circular(8),
+                child: Image.asset(
+                  "assets/images/google.png",
+                  width: 48,
+                  height: 48,
+                  fit: BoxFit.cover,
+                ),
               ),
-            ),
-            const SizedBox(width: 12),
+              const SizedBox(width: 12),
 
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    "Judul Todo",
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      "Judul Todo",
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    "Kategori",
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: Colors.grey[600],
+                    const SizedBox(height: 4),
+                    Text(
+                      "Kategori",
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: Colors.grey[600],
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
 
-            IconButton(
-              icon: const Icon(
-                CupertinoIcons.star,
-                color: Colors.amber,
+              IconButton(
+                icon: const Icon(
+                  CupertinoIcons.star,
+                  color: Colors.amber,
+                ),
+                onPressed: () {
+                },
               ),
-              onPressed: () {
-              },
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

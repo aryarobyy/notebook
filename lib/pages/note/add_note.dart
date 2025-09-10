@@ -4,15 +4,14 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_quill/flutter_quill.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:to_do_list/component/widget/button/nav_button.dart';
 import 'package:to_do_list/component/widget/field/note_text_field.dart';
-import 'package:to_do_list/component/size/size_config.dart';
 import 'package:to_do_list/component/widget/layout/header.dart';
 import 'package:to_do_list/component/widget/layout/popup.dart';
 import 'package:to_do_list/notifiers/category_notifier.dart';
 import 'package:to_do_list/notifiers/note_notifier.dart';
 import 'package:to_do_list/pages/dashboard.dart';
 import 'package:to_do_list/pages/note/note.dart';
+import 'package:flutter_riverpod/legacy.dart';
 
 final isEditProvider = StateProvider<bool>((ref) => false);
 final isCategoryProvider = StateProvider<bool>((ref) => false);
@@ -263,16 +262,16 @@ class _AddNoteState extends ConsumerState<AddNote> {
 
       final noteNotifier = ref.read(noteNotifierProvider.notifier);
       final catNotifier = ref.read(categoryNotifierProvider.notifier);
+      final note = ref.watch(noteNotifierProvider).note;
 
-      final note = await noteNotifier.addNote(
+      noteNotifier.addNote(
         widget.userId,
         _titleController.text.trim(),
         contentAsJsonString,
       );
 
       if(selectedCategory.isNotEmpty){
-        final data = await catNotifier.update(creatorId: widget.userId, title: selectedCategory, removeNoteId: [], addNoteId: [note.id]);
-        print("data $data");
+        await catNotifier.update(creatorId: widget.userId, title: selectedCategory, removeNoteId: [], addNoteId: [note!.id]);
       }
 
       _titleController.clear();
@@ -283,7 +282,7 @@ class _AddNoteState extends ConsumerState<AddNote> {
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
-          builder: (_) => Note(creatorId: widget.userId, noteId: note.id),
+          builder: (_) => Note(creatorId: widget.userId, noteId: note!.id),
         ),
       );
     }

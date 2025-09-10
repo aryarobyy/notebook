@@ -9,11 +9,13 @@ import 'package:to_do_list/notifiers/note_notifier.dart';
 class CategoriesCard extends ConsumerWidget {
   final UserModel userData;
   final CategoryModel category;
+  final NoteModel note;
 
   const CategoriesCard({
     super.key,
     required this.userData,
     required this.category,
+    required this.note,
   });
 
   @override
@@ -107,7 +109,7 @@ class CategoriesCard extends ConsumerWidget {
     if (items != null && items.isNotEmpty) {
       for (var noteId in items) {
         try {
-          final note = await noteNotifier.noteById(userData.id, noteId);
+          await noteNotifier.noteById(userData.id, noteId);
           notesData.add(note);
         } catch (e) {
           print('Error fetching note $noteId: $e');

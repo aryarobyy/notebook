@@ -6,6 +6,8 @@ part 'user_model.g.dart';
 
 @JsonEnum()
 enum Role {
+  @JsonValue('SUPER_ADMIN')
+  SUPER_ADMIN,
   @JsonValue('ADMIN')
   ADMIN,
   @JsonValue('USER')

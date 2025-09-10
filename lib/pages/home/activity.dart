@@ -5,9 +5,9 @@ import 'package:to_do_list/component/widget/button/button1.dart';
 import 'package:to_do_list/component/widget/card/note_card.dart';
 import 'package:to_do_list/component/util/text.dart';
 import 'package:to_do_list/models/index.dart';
-import 'package:to_do_list/notifiers/category_notifier.dart';
 import 'package:to_do_list/notifiers/note_notifier.dart';
 import 'package:to_do_list/pages/note/note.dart';
+import 'package:flutter_riverpod/legacy.dart';
 
 final selectedNoteTitleProvider = StateProvider<String?>((ref) => null);
 
@@ -127,7 +127,15 @@ class _ActivityState extends ConsumerState<Activity> {
     final String? selectedTitle = ref.watch(selectedNoteTitleProvider);
     final NoteModel selectedNote = allNotesForDropdown.firstWhere(
           (note) => note.id == selectedTitle,
-      orElse: () => allNotesForDropdown.isNotEmpty ? allNotesForDropdown.first : NoteModel(id: '', creatorId: '', title: '', content: '', createdAt: DateTime.timestamp(), tags: []),
+      orElse: () => allNotesForDropdown.isNotEmpty ? allNotesForDropdown.first : NoteModel(
+        id: '',
+        creatorId: '',
+        title: '',
+        content: '',
+        createdAt: DateTime.timestamp(),
+        tag: [],
+        status: NoteStatus.UNACTIVE,
+      ),
     );
     if (selectedTitle != null && selectedNote != null && _dropDownController.text != selectedNote.title) {
       _dropDownController.text = selectedNote.title;

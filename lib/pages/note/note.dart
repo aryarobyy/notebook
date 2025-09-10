@@ -1,10 +1,9 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_quill/flutter_quill.dart';
-import 'package:flutter_quill/quill_delta.dart';
+import 'package:flutter_riverpod/legacy.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:to_do_list/component/widget/layout/header.dart';
-import 'package:to_do_list/component/widget/layout/popup.dart';
 import 'package:to_do_list/notifiers/note_notifier.dart';
 import 'package:to_do_list/pages/dashboard.dart';
 
@@ -92,16 +91,14 @@ class _NoteState extends ConsumerState<Note> {
         'creatorId': note.creatorId,
         'title': _titleController.text.isEmpty ? note.title : _titleController.text,
         'content': contentAsJsonString,
-        'tags': note.tags
+        'tags': note.tag
       };
 
-      print("Updatess");
-      final dataUploaded = await notifier.update(
+      await notifier.update(
           noteId: note.id,
           creatorId: note.creatorId,
           updatedData: notePayload
       );
-      print("Note updated $dataUploaded");
       Navigator.pushReplacement(
           context, MaterialPageRoute(builder: (_) => Dashboard()));
     } catch (e) {
