@@ -14,14 +14,12 @@ class State {
   final NoteModel? note;
   final List<NoteModel>? notes;
   final String? error;
-  final String fullContent;
 
   const State({
     this.isLoading = false,
     this.note,
     this.notes,
     this.error,
-    this.fullContent = '',
   });
 
   State copyWith({
@@ -29,14 +27,12 @@ class State {
     NoteModel? note,
     List<NoteModel>? notes,
     String? error,
-    String? fullContent,
   }) {
     return State(
       isLoading: isLoading ?? this.isLoading,
       note: note ?? this.note,
       notes: notes ?? this.notes,
       error: error ?? this.error,
-      fullContent: fullContent ?? this.fullContent,
     );
   }
 }

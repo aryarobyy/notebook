@@ -12,14 +12,12 @@ class State {
   final SubTaskModel? subTask;
   final List<SubTaskModel>? subTasks;
   final String? error;
-  final String fullContent;
 
   const State({
     this.isLoading = false,
     this.subTask,
     this.subTasks,
     this.error,
-    this.fullContent = '',
   });
 
   State copyWith({
@@ -27,14 +25,12 @@ class State {
     SubTaskModel? subTask,
     List<SubTaskModel>? subTasks,
     String? error,
-    String? fullContent,
   }) {
     return State(
       isLoading: isLoading ?? this.isLoading,
       subTask: subTask ?? this.subTask,
       subTasks: subTasks ?? this.subTasks,
       error: error ?? this.error,
-      fullContent: fullContent ?? this.fullContent,
     );
   }
 }

@@ -12,14 +12,12 @@ class State {
   final TodoModel? todo;
   final List<TodoModel>? todos;
   final String? error;
-  final String fullContent;
 
   const State({
     this.isLoading = false,
     this.todo,
     this.todos,
     this.error,
-    this.fullContent = '',
   });
 
   State copyWith({
@@ -27,14 +25,12 @@ class State {
     TodoModel? todo,
     List<TodoModel>? todos,
     String? error,
-    String? fullContent,
   }) {
     return State(
       isLoading: isLoading ?? this.isLoading,
       todo: todo ?? this.todo,
       todos: todos ?? this.todos,
       error: error ?? this.error,
-      fullContent: fullContent ?? this.fullContent,
     );
   }
 }
