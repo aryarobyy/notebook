@@ -1,10 +1,15 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:to_do_list/models/index.dart';
 import 'package:to_do_list/pages/todo/subtask.dart';
 
 class TodoCard extends ConsumerStatefulWidget {
-  const TodoCard({super.key});
+  final TodoModel todo;
+  const TodoCard({
+    required this.todo,
+    super.key,
+  });
 
   @override
   ConsumerState createState() => _TodoCardState();
@@ -21,7 +26,7 @@ class _TodoCardState extends ConsumerState<TodoCard> {
       elevation: 3,
       child: InkWell(
         onTap: () {
-          Navigator.push(context, MaterialPageRoute(builder: (_) => SubtaskCard()));
+          // Navigator.push(context, MaterialPageRoute(builder: (_) => Subtask()));
         },
         child: Padding(
           padding: const EdgeInsets.all(12),

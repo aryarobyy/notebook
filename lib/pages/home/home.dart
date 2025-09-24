@@ -8,6 +8,7 @@ import 'package:to_do_list/component/widget/card/todo_card.dart';
 import 'package:to_do_list/models/index.dart';
 import 'package:to_do_list/notifiers/category_notifier.dart';
 import 'package:to_do_list/notifiers/note_notifier.dart';
+import 'package:to_do_list/notifiers/todo_notifier.dart';
 import 'package:to_do_list/pages/home/category_setting.dart';
 import 'package:to_do_list/pages/profile/profile.dart';
 import 'package:flutter_riverpod/legacy.dart';
@@ -32,12 +33,12 @@ class _HomeState extends ConsumerState<Home> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       if (mounted && widget.userData.id.isNotEmpty) {
-        ref
+        await ref
           .read(categoryNotifierProvider.notifier)
           .categoryByCreator(widget.userData.id);
         await ref
-          .read(noteNotifierProvider.notifier)
-          .noteByCreator(widget.userData.id);
+          .read(todoNotifierProvider.notifier)
+          .getTodosByCreator(creatorId: widget.userData.id);
       }
     });
   }
@@ -154,8 +155,8 @@ class _HomeState extends ConsumerState<Home> {
                 fontSize: 18,
                 fontWeight: FontWeight.w600,
               ),
+              _buildTodo(context),
               const SizedBox(height: 10),
-              TodoCard()
             ],
           ),
         ),
@@ -174,11 +175,6 @@ class _HomeState extends ConsumerState<Home> {
       }
     });
 
-    if (state.categories == null ||
-        state.categories!.isEmpty) {
-      return const SizedBox.shrink();
-    }
-
     return SizedBox(
       height: 40,
       child: Row(
@@ -187,55 +183,49 @@ class _HomeState extends ConsumerState<Home> {
           MyButton1(
             isTapped: navTitle == 'All',
             text: "All",
-            onPressed: () {
-              _handleNavChange("All");
-            },
+            onPressed: () => _handleNavChange("All"),
           ),
           const SizedBox(width: 8),
-          Expanded(
-            child: Consumer(
-              builder: (context, ref, child) {
-                return ListView.builder(
-                  scrollDirection: Axis.horizontal,
-                  itemCount: state.categories!.length,
-                  itemBuilder: (BuildContext context, int index) {
-                    final category = state.categories![index];
-                    final currentNavTitle = ref.watch(navTitleProvider);
-                    return MyButton1(
+
+          if (state.categories != null && state.categories!.isNotEmpty)
+            Expanded(
+              child: ListView.builder(
+                scrollDirection: Axis.horizontal,
+                itemCount: state.categories!.length,
+                itemBuilder: (BuildContext context, int index) {
+                  final category = state.categories![index];
+
+                  if (category.title == "All") return const SizedBox.shrink();
+
+                  return Padding(
+                    padding: const EdgeInsets.only(right: 8),
+                    child: MyButton1(
                       text: category.title,
-                      isTapped: currentNavTitle == category.title,
-                      onPressed: () {
-                        _handleNavChange(category.title);
-                      },
-                    );
-                  },
-                );
-              },
-            ),
-          ),
+                      isTapped: navTitle == category.title,
+                      onPressed: () => _handleNavChange(category.title),
+                    ),
+                  );
+                },
+              ),
+            )
+          else
+            const Spacer(),
+
           const SizedBox(width: 8),
+
           InkWell(
             onTap: () {
-              print(state.categories);
-              // showDialog(
-              //   context: context,
-              //   builder: (BuildContext context){
-              //     return _buildAddCat(context);
-              //   }
-              // );
-              if (state.categories != null) {
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => CategorySetting(categories: state.categories, userData: widget.userData,)
-                  )
-                );
-              } else {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Category tidak ditemukan')),
-                );
-              }
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => CategorySetting(
+                    categories: state.categories,
+                    userData: widget.userData,
+                  ),
+                ),
+              );
             },
+            borderRadius: BorderRadius.circular(25),
             child: Container(
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
@@ -250,7 +240,7 @@ class _HomeState extends ConsumerState<Home> {
     );
   }
 
-  Widget _buildAddCat (BuildContext context){
+  Widget _buildAddCat(BuildContext context){
     final cs = Theme.of(context).colorScheme;
 
     return AlertDialog(
@@ -294,6 +284,21 @@ class _HomeState extends ConsumerState<Home> {
           )
         ),
       ),
+    );
+  }
+
+  Widget _buildTodo(BuildContext context){
+    final state = ref.read(todoNotifierProvider);
+    final todos = state.todos ?? [];
+
+    return Expanded(
+      child: ListView.builder(
+        itemCount: todos.length,
+        itemBuilder: (context, index) {
+          final TodoModel todo = todos[index];
+          return TodoCard(todo: todo);
+        }
+      )
     );
   }
 }
